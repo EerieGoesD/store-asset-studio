@@ -18,3 +18,7 @@ Thumbs.db
 
 # Development certificate
 devcert.pfx
+
+# Build and install logs
+sas-build.log
+vsbuildtools-install.log
