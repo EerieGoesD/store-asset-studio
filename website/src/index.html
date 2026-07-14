@@ -1881,6 +1881,8 @@ function renderWindowsIcon(src, w, h) {
   canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, w, h);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high'; // crisper small .ico frames (16/20/24)
 
   const box = windowsFill() * Math.min(w, h);
   const s = Math.min(box / src.width, box / src.height);
@@ -2535,8 +2537,9 @@ function closeLog() { document.getElementById('logOverlay').classList.remove('op
 // ─────────────────────────────────────────────
 
 function buildIco(src) {
-  // Build a multi-resolution ICO containing 16, 32, 48, 64, 128, 256px sizes
-  const sizes = [16, 32, 48, 64, 128, 256];
+  // Build a multi-resolution ICO with a native frame at every size Windows uses
+  // (incl. the in-between taskbar sizes 20/24/30/36/40/96), so no scaling blur.
+  const sizes = [16, 20, 24, 30, 32, 36, 40, 48, 64, 96, 128, 256];
   const pngBlobs = [];
 
   for (const s of sizes) {
