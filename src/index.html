@@ -1149,11 +1149,11 @@
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
           </span>
           <div class="ap-shape">
-            <canvas id="apCanvasCircle" width="256" height="256" title="Drag to move the icon"></canvas>
+            <canvas id="apCanvasCircle" width="256" height="256" tabindex="0" title="Drag to move the icon, arrow keys to nudge"></canvas>
             <span class="ap-shape-label">Circle (Pixel)</span>
           </div>
           <div class="ap-shape">
-            <canvas id="apCanvasSquircle" width="256" height="256" title="Drag to move the icon"></canvas>
+            <canvas id="apCanvasSquircle" width="256" height="256" tabindex="0" title="Drag to move the icon, arrow keys to nudge"></canvas>
             <span class="ap-shape-label">Rounded (Samsung)</span>
           </div>
         </div>
@@ -1189,11 +1189,11 @@
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
           </span>
           <div class="ap-shape">
-            <canvas id="wpCanvasLight" width="256" height="256" title="Drag to move the icon"></canvas>
+            <canvas id="wpCanvasLight" width="256" height="256" tabindex="0" title="Drag to move the icon, arrow keys to nudge"></canvas>
             <span class="ap-shape-label">Light</span>
           </div>
           <div class="ap-shape">
-            <canvas id="wpCanvasDark" width="256" height="256" title="Drag to move the icon"></canvas>
+            <canvas id="wpCanvasDark" width="256" height="256" tabindex="0" title="Drag to move the icon, arrow keys to nudge"></canvas>
             <span class="ap-shape-label">Dark</span>
           </div>
         </div>
@@ -1229,11 +1229,11 @@
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
           </span>
           <div class="ap-shape">
-            <canvas id="mpCanvasLight" width="256" height="256" title="Drag to move the icon"></canvas>
+            <canvas id="mpCanvasLight" width="256" height="256" tabindex="0" title="Drag to move the icon, arrow keys to nudge"></canvas>
             <span class="ap-shape-label">Light</span>
           </div>
           <div class="ap-shape">
-            <canvas id="mpCanvasDark" width="256" height="256" title="Drag to move the icon"></canvas>
+            <canvas id="mpCanvasDark" width="256" height="256" tabindex="0" title="Drag to move the icon, arrow keys to nudge"></canvas>
             <span class="ap-shape-label">Dark</span>
           </div>
         </div>
@@ -2093,6 +2093,27 @@ function drawAndroidPreviewGrid(ctx, W, H) {
 // maps cleanly onto both the preview and the generated foreground PNGs.
 let apDragging = false, apDragLastX = 0, apDragLastY = 0;
 function clampOffset(v) { return Math.max(-0.5, Math.min(0.5, v)); }
+// Arrow keys nudge the focused preview by one canvas pixel (finest step).
+function initPreviewArrowKeys(ids, getOffset, setOffset, draw) {
+  ids.forEach(id => {
+    const c = document.getElementById(id);
+    c.addEventListener('keydown', e => {
+      if (!sourceImage) return;
+      const step = 1 / c.width;
+      let dx = 0, dy = 0;
+      if (e.key === 'ArrowLeft') dx = -step;
+      else if (e.key === 'ArrowRight') dx = step;
+      else if (e.key === 'ArrowUp') dy = -step;
+      else if (e.key === 'ArrowDown') dy = step;
+      else return;
+      e.preventDefault();
+      const o = getOffset();
+      setOffset(clampOffset(o.x + dx), clampOffset(o.y + dy));
+      draw();
+    });
+  });
+}
+
 function initAndroidPreviewDrag() {
   ['apCanvasCircle', 'apCanvasSquircle'].forEach(id => {
     const c = document.getElementById(id);
@@ -2102,6 +2123,7 @@ function initAndroidPreviewDrag() {
       apDragLastX = e.clientX; apDragLastY = e.clientY;
       c.classList.add('ap-grabbing');
       try { c.setPointerCapture(e.pointerId); } catch (_) {}
+      c.focus();
     });
     c.addEventListener('pointermove', e => {
       if (!apDragging) return;
@@ -2123,6 +2145,11 @@ function initAndroidPreviewDrag() {
     e.preventDefault();
     setAndroidScale(androidScalePct + (e.deltaY < 0 ? 4 : -4));
   }, { passive: false });
+
+  initPreviewArrowKeys(['apCanvasCircle', 'apCanvasSquircle'],
+    () => ({ x: androidOffsetX, y: androidOffsetY }),
+    (x, y) => { androidOffsetX = x; androidOffsetY = y; },
+    drawAndroidPreviews);
 }
 
 // ─────────────────────────────────────────────
@@ -2267,6 +2294,7 @@ function initWindowsPreviewDrag() {
       wpDragLastX = e.clientX; wpDragLastY = e.clientY;
       c.classList.add('ap-grabbing');
       try { c.setPointerCapture(e.pointerId); } catch (_) {}
+      c.focus();
     });
     c.addEventListener('pointermove', e => {
       if (!wpDragging) return;
@@ -2288,6 +2316,11 @@ function initWindowsPreviewDrag() {
     e.preventDefault();
     setWindowsScale(windowsScalePct + (e.deltaY < 0 ? 4 : -4));
   }, { passive: false });
+
+  initPreviewArrowKeys(['wpCanvasLight', 'wpCanvasDark'],
+    () => ({ x: windowsOffsetX, y: windowsOffsetY }),
+    (x, y) => { windowsOffsetX = x; windowsOffsetY = y; },
+    drawWindowsPreviews);
 }
 
 // ─────────────────────────────────────────────
@@ -2436,6 +2469,7 @@ function initMacosPreviewDrag() {
       mpDragLastX = e.clientX; mpDragLastY = e.clientY;
       c.classList.add('ap-grabbing');
       try { c.setPointerCapture(e.pointerId); } catch (_) {}
+      c.focus();
     });
     c.addEventListener('pointermove', e => {
       if (!mpDragging) return;
@@ -2457,6 +2491,11 @@ function initMacosPreviewDrag() {
     e.preventDefault();
     setMacosScale(macosScalePct + (e.deltaY < 0 ? 4 : -4));
   }, { passive: false });
+
+  initPreviewArrowKeys(['mpCanvasLight', 'mpCanvasDark'],
+    () => ({ x: macosOffsetX, y: macosOffsetY }),
+    (x, y) => { macosOffsetX = x; macosOffsetY = y; },
+    drawMacosPreviews);
 }
 
 // ─────────────────────────────────────────────
