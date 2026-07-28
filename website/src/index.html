@@ -616,7 +616,7 @@
   }
   /* Windows tiles fill their corner (unlike the Android circle), so the move
      icon needs more clearance to sit clearly outside the icon. */
-  #windowsPreview .ap-move-hint { margin-right: -8px; }
+  #windowsPreview .ap-move-hint, #macosPreview .ap-move-hint { margin-right: -8px; }
 
   .ap-shape-label {
     font-family: var(--mono);
@@ -1194,7 +1194,7 @@
           </div>
           <div class="ap-slider-row">
             <span class="ap-slider-label">Scale</span>
-            <input type="range" id="apScaleSlider" min="50" max="200" value="100"
+            <input type="range" id="apScaleSlider" min="50" max="300" value="100"
                    oninput="onAndroidScaleSlide(this.value)" />
             <span class="ap-slider-val" id="apScaleVal">100%</span>
           </div>
@@ -1234,7 +1234,7 @@
           </div>
           <div class="ap-slider-row">
             <span class="ap-slider-label">Scale</span>
-            <input type="range" id="wpScaleSlider" min="50" max="200" value="100"
+            <input type="range" id="wpScaleSlider" min="50" max="300" value="100"
                    oninput="onWindowsScaleSlide(this.value)" />
             <span class="ap-slider-val" id="wpScaleVal">100%</span>
           </div>
@@ -1274,7 +1274,7 @@
           </div>
           <div class="ap-slider-row">
             <span class="ap-slider-label">Scale</span>
-            <input type="range" id="mpScaleSlider" min="50" max="200" value="100"
+            <input type="range" id="mpScaleSlider" min="50" max="300" value="100"
                    oninput="onMacosScaleSlide(this.value)" />
             <span class="ap-slider-val" id="mpScaleVal">100%</span>
           </div>
@@ -1996,7 +1996,7 @@ function onAndroidPaddingSlide(value) {
 }
 
 function setAndroidScale(pct) {
-  androidScalePct = Math.max(50, Math.min(200, Math.round(pct)));
+  androidScalePct = Math.max(50, Math.min(300, Math.round(pct)));
   document.getElementById('apScaleSlider').value = androidScalePct;
   document.getElementById('apScaleVal').textContent = androidScalePct + '%';
   drawAndroidPreviews();
@@ -2169,7 +2169,7 @@ function onWindowsPaddingSlide(value) {
 }
 
 function setWindowsScale(pct) {
-  windowsScalePct = Math.max(50, Math.min(200, Math.round(pct)));
+  windowsScalePct = Math.max(50, Math.min(300, Math.round(pct)));
   document.getElementById('wpScaleSlider').value = windowsScalePct;
   document.getElementById('wpScaleVal').textContent = windowsScalePct + '%';
   drawWindowsPreviews();
@@ -2335,7 +2335,7 @@ function onMacosPaddingSlide(value) {
 }
 
 function setMacosScale(pct) {
-  macosScalePct = Math.max(50, Math.min(200, Math.round(pct)));
+  macosScalePct = Math.max(50, Math.min(300, Math.round(pct)));
   document.getElementById('mpScaleSlider').value = macosScalePct;
   document.getElementById('mpScaleVal').textContent = macosScalePct + '%';
   drawMacosPreviews();
