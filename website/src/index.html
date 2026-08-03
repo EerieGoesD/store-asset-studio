@@ -2297,8 +2297,9 @@ function renderWindowsIcon(src, w, h) {
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high'; // crisper small .ico frames (16/20/24)
 
-  const box = windowsFill() * Math.min(w, h);
-  const s = Math.min(box / src.width, box / src.height);
+  // Fill the whole canvas at 100%, whatever its shape, so non-square assets
+  // (wide logo, splash, screenshots) do not leave bars showing the source edges.
+  const s = windowsFill() * Math.max(w / src.width, h / src.height);
   const nw = Math.max(1, Math.round(src.width * s));
   const nh = Math.max(1, Math.round(src.height * s));
   const cx = w / 2 + windowsOffsetX * w;
