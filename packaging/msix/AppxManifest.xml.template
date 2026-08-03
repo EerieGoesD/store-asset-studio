@@ -14,9 +14,10 @@
   <!-- Identity matches Partner Center (Product management > Product identity)
        for app 9MXHK444FG4Q. The Microsoft Store re-signs the package on submission. -->
   <Identity
-    Name="20715EerieGoesD.StoreAssetStudio"
-    Publisher="CN=A2A89A47-0B2B-4C32-B85C-9753888A9FFC"
-    Version="1.1.8.0" />
+    Name="{{IDENTITY_NAME}}"
+    Publisher="{{PUBLISHER}}"
+    Version="{{VERSION}}"
+    ProcessorArchitecture="{{ARCHITECTURE}}" />
 
   <Properties>
     <DisplayName>Store Asset Studio</DisplayName>
@@ -34,7 +35,7 @@
 
   <Applications>
     <Application Id="StoreAssetStudio"
-      Executable="store-asset-studio.exe"
+      Executable="{{EXE_NAME}}"
       EntryPoint="Windows.FullTrustApplication"
       uap10:TrustLevel="mediumIL"
       uap10:RuntimeBehavior="packagedClassicApp">
