@@ -1569,6 +1569,7 @@ const PLATFORMS = [
           { file: 'macOS/icon-256.png',  w: 256,  h: 256 },
           { file: 'macOS/icon-512.png',  w: 512,  h: 512 },
           { file: 'macOS/icon-1024.png', w: 1024, h: 1024 },
+          { file: 'macOS/icon.icns',     w: 1024, h: 1024, icns: true },
         ]
       },
     ]
@@ -2413,34 +2414,33 @@ function drawMacosPreviewShape(canvas, theme) {
   ctx.fillStyle = theme === 'light' ? '#d8d8de' : '#141418';
   ctx.fillRect(0, 0, W, H);
 
-  // Apple's 824/1024 rounded-square plate, centred on the canvas.
-  const plate = MACOS_PLATE_RATIO * W;
-  const px = (W - plate) / 2, py = (H - plate) / 2;
-  const r = plate * MACOS_CORNER_RATIO;
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(px + r, py);
-  ctx.arcTo(px + plate, py, px + plate, py + plate, r);
-  ctx.arcTo(px + plate, py + plate, px, py + plate, r);
-  ctx.arcTo(px, py + plate, px, py, r);
-  ctx.arcTo(px, py, px + plate, py, r);
-  ctx.closePath();
-  ctx.fillStyle = theme === 'light' ? '#f4f4f7' : '#26262e';
-  ctx.fill();
-  ctx.restore();
-
-  // Logo box is a fraction of the canvas, nudged by the drag offset.
-  const box = macosFill() * W;
-  const s = Math.min(box / sourceImage.width, box / sourceImage.height);
-  const dw = sourceImage.width * s, dh = sourceImage.height * s;
-  const cx = W / 2 + macosOffsetX * W;
-  const cy = H / 2 + macosOffsetY * H;
-  ctx.drawImage(sourceImage, cx - dw / 2, cy - dh / 2, dw, dh);
+  // Show the exact file that will be exported, squircle and shadow included,
+  // sitting on the desktop colour. Anything else here is a lie about the output.
+  ctx.drawImage(renderMacosIcon(sourceImage, W, H), 0, 0);
 
   if (macosGridEnabled) drawAndroidPreviewGrid(ctx, W, H);
 }
 
-// Render a macOS icon PNG (transparent margin) using the preview settings.
+// Trace Apple's squircle. Their plate is a superellipse, not a rounded
+// rectangle, so an arcTo corner is visibly wrong at large sizes.
+function macosSquirclePath(ctx, cx, cy, size) {
+  const a = size / 2, N = 5, STEPS = 256;
+  ctx.beginPath();
+  for (let i = 0; i <= STEPS; i++) {
+    const t = (i / STEPS) * Math.PI * 2;
+    const ct = Math.cos(t), st = Math.sin(t);
+    const x = cx + a * Math.sign(ct) * Math.pow(Math.abs(ct), 2 / N);
+    const y = cy + a * Math.sign(st) * Math.pow(Math.abs(st), 2 / N);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+}
+
+// Render a macOS icon PNG using the preview settings. macOS never rounds or
+// shadows an icon for you: whatever is in the file is exactly what the Dock,
+// Finder and Launchpad draw. So the squircle and the drop shadow are baked in
+// here, matching Apple's own icons (824 plate on a 1024 canvas, shadow ~33px
+// below the plate at that scale).
 function renderMacosIcon(src, w, h) {
   const canvas = document.createElement('canvas');
   canvas.width = w; canvas.height = h;
@@ -2456,7 +2456,32 @@ function renderMacosIcon(src, w, h) {
   const cx = w / 2 + macosOffsetX * w;
   const cy = h / 2 + macosOffsetY * h;
 
-  ctx.drawImage(src, Math.round(cx - nw / 2), Math.round(cy - nh / 2), nw, nh);
+  // The plate: artwork clipped to the squircle, drawn on its own canvas so the
+  // shadow underneath can use the finished silhouette.
+  const plate = document.createElement('canvas');
+  plate.width = w; plate.height = h;
+  const pctx = plate.getContext('2d');
+  pctx.imageSmoothingEnabled = true;
+  pctx.imageSmoothingQuality = 'high';
+  pctx.save();
+  macosSquirclePath(pctx, cx, cy, box);
+  pctx.clip();
+  pctx.drawImage(src, Math.round(cx - nw / 2), Math.round(cy - nh / 2), nw, nh);
+  pctx.restore();
+
+  // Apple's drop shadow, scaled from the 1024 reference so every size matches.
+  const k = Math.min(w, h) / 1024;
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.34)';
+  ctx.shadowBlur = 26 * k;
+  ctx.shadowOffsetY = 10 * k;
+  ctx.drawImage(plate, 0, 0);
+  ctx.restore();
+
+  // Redraw on top: the shadow pass also paints the plate, and stacking a
+  // second copy over it removes the shadow bleeding through semi-transparent
+  // artwork.
+  ctx.drawImage(plate, 0, 0);
   return canvas;
 }
 
@@ -3170,6 +3195,48 @@ function buildIco(src) {
   });
 }
 
+// Build a macOS .icns. Every slice is a PNG, which .icns has accepted since
+// 10.7, so no special encoding is needed. Xcode and Tauri both point at this
+// one file, so shipping it saves running iconutil by hand.
+async function buildIcns(src) {
+  // The ten slices iconutil itself produces, nothing else. icp6 is deliberately
+  // absent: macOS reads it as 48x48, which is not part of the macOS iconset,
+  // and Apple's own icons do not carry it.
+  const slices = [
+    ['icp4', 16],   // 16
+    ['ic11', 32],   // 16@2x
+    ['icp5', 32],   // 32
+    ['ic12', 64],   // 32@2x
+    ['ic07', 128],  // 128
+    ['ic13', 256],  // 128@2x
+    ['ic08', 256],  // 256
+    ['ic14', 512],  // 256@2x
+    ['ic09', 512],  // 512
+    ['ic10', 1024], // 512@2x
+  ];
+
+  const chunks = [];
+  for (const [type, size] of slices) {
+    const canvas = renderMacosIcon(src, size, size);
+    const blob = await canvasToBlob(canvas);
+    const png = new Uint8Array(await blob.arrayBuffer());
+    const chunk = new Uint8Array(8 + png.length);
+    for (let i = 0; i < 4; i++) chunk[i] = type.charCodeAt(i);
+    // Chunk length covers the 8-byte header too, and .icns is big-endian.
+    new DataView(chunk.buffer).setUint32(4, 8 + png.length, false);
+    chunk.set(png, 8);
+    chunks.push(chunk);
+  }
+
+  const body = chunks.reduce((n, c) => n + c.length, 0);
+  const out = new Uint8Array(8 + body);
+  out[0] = 0x69; out[1] = 0x63; out[2] = 0x6e; out[3] = 0x73; // "icns"
+  new DataView(out.buffer).setUint32(4, 8 + body, false);
+  let pos = 8;
+  for (const c of chunks) { out.set(c, pos); pos += c.length; }
+  return out.buffer;
+}
+
 // ─────────────────────────────────────────────
 // GENERATE
 // ─────────────────────────────────────────────
@@ -3215,6 +3282,10 @@ async function generate() {
         // Build multi-resolution ICO file
         const icoBuffer = await buildIco(sourceImage);
         outputs.push({ path: outFile, data: icoBuffer });
+      } else if (spec.icns) {
+        // Build the macOS .icns, ready to drop straight into a project
+        const icnsBuffer = await buildIcns(sourceImage);
+        outputs.push({ path: outFile, data: icnsBuffer });
       } else if (spec.badge) {
         // Badge logos: encode PNG manually to bypass canvas.toBlob()
         // alpha-premultiplication artifacts that break WACK validation
