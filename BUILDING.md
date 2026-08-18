@@ -10,7 +10,7 @@ location chosen in the native save dialog.
 ```
 src/         Static frontend (index.html, jszip.min.js, fonts/)
 src-tauri/   Rust/Tauri shell (config, icons, write_file command)
-website/     Archived source of the original web version (not built)
+web/         Archived source of the original web version (not built)
 ```
 
 ## Develop
