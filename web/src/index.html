@@ -2289,6 +2289,28 @@ function drawWindowsPreviewShape(canvas, theme) {
 
 // Render the actual .ico artwork (transparent background) using the preview
 // settings. At defaults (0 padding, 100 scale) this matches a plain contain.
+// Average colour of the source's outer edge, used to fill the leftover space on
+// non-square canvases. Returns null when the edge is transparent.
+function sampleEdgeColor(src) {
+  const n = 32;
+  const c = document.createElement('canvas');
+  c.width = n; c.height = n;
+  const cx = c.getContext('2d');
+  cx.drawImage(src, 0, 0, n, n);
+  const d = cx.getImageData(0, 0, n, n).data;
+  let r = 0, g = 0, b = 0, count = 0;
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      if (x > 1 && x < n - 2 && y > 1 && y < n - 2) continue;
+      const i = (y * n + x) * 4;
+      if (d[i + 3] < 200) continue;
+      r += d[i]; g += d[i + 1]; b += d[i + 2]; count++;
+    }
+  }
+  if (!count) return null;
+  return `rgb(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)})`;
+}
+
 function renderWindowsIcon(src, w, h) {
   const canvas = document.createElement('canvas');
   canvas.width = w; canvas.height = h;
@@ -2297,9 +2319,15 @@ function renderWindowsIcon(src, w, h) {
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high'; // crisper small .ico frames (16/20/24)
 
-  // Fill the whole canvas at 100%, whatever its shape, so non-square assets
-  // (wide logo, splash, screenshots) do not leave bars showing the source edges.
-  const s = windowsFill() * Math.max(w / src.width, h / src.height);
+  // On a non-square canvas, paint the source's own edge colour behind the icon
+  // so the leftover space matches it: no bars, no visible rounded corners, and
+  // the whole icon stays visible instead of being cropped.
+  if (w !== h) {
+    const bg = sampleEdgeColor(src);
+    if (bg) { ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h); }
+  }
+
+  const s = windowsFill() * Math.min(w / src.width, h / src.height);
   const nw = Math.max(1, Math.round(src.width * s));
   const nh = Math.max(1, Math.round(src.height * s));
   const cx = w / 2 + windowsOffsetX * w;
