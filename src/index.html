@@ -2275,16 +2275,20 @@ function sampleEdgeColor(src) {
   const cx = c.getContext('2d');
   cx.drawImage(src, 0, 0, n, n);
   const d = cx.getImageData(0, 0, n, n).data;
-  let r = 0, g = 0, b = 0, count = 0;
+  let r = 0, g = 0, b = 0, count = 0, total = 0;
   for (let y = 0; y < n; y++) {
     for (let x = 0; x < n; x++) {
       if (x > 1 && x < n - 2 && y > 1 && y < n - 2) continue;
+      total++;
       const i = (y * n + x) * 4;
       if (d[i + 3] < 200) continue;
       r += d[i]; g += d[i + 1]; b += d[i + 2]; count++;
     }
   }
-  if (!count) return null;
+  // A mostly transparent edge means the source has no background of its own,
+  // just artwork that happens to touch the border. Filling with that artwork's
+  // colour would hide the icon, so leave the leftover space transparent.
+  if (!count || count < total * 0.75) return null;
   return `rgb(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)})`;
 }
 
