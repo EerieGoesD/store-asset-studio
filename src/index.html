@@ -958,6 +958,11 @@
     line-height: 1.2;
     white-space: nowrap;
   }
+  .size-card .sz-phone {
+    display: inline-block;
+    vertical-align: middle;
+    margin: -2px 4px 0 0;
+  }
   .size-card .sz-ok {
     flex: 0 0 auto;
     font-family: var(--mono);
@@ -3459,7 +3464,11 @@ const SHOT_STORES = {
       { w: 1440, h: 900,  note: 'Standard resolution' },
       { w: 2560, h: 1600, note: 'Retina, most common' },
       { w: 2880, h: 1800, note: 'Largest accepted' },
-      { w: 1024, h: 1024, note: 'Square, app icon' }
+      { w: 1024, h: 1024, note: 'Square, app icon' },
+      { w: 1242, h: 2688, note: 'iPhone, portrait',  phone: true },
+      { w: 2688, h: 1242, note: 'iPhone, landscape', phone: true },
+      { w: 1284, h: 2778, note: 'iPhone, portrait',  phone: true },
+      { w: 2778, h: 1284, note: 'iPhone, landscape', phone: true }
     ]
   },
   microsoft: {
@@ -3494,6 +3503,13 @@ function setShotStore(key) {
   renderShotList();
 }
 
+// Phone outline shown on iPhone sizes, turned sideways for landscape.
+function phoneIcon(landscape) {
+  return landscape
+    ? '<svg class="sz-phone" width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><rect x="0.75" y="4" width="14.5" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="12.5" y1="7" x2="12.5" y2="9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'
+    : '<svg class="sz-phone" width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="0.75" width="8" height="14.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="7" y1="12.5" x2="9" y2="12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+}
+
 function buildSizeCards() {
   const store = SHOT_STORES[shotStore];
   document.getElementById('storeApple').classList.toggle('active', shotStore === 'apple');
@@ -3506,7 +3522,7 @@ function buildSizeCards() {
     const card = document.createElement('div');
     card.className = 'size-card' + (sz.w === shotSize.w && sz.h === shotSize.h ? ' active' : '');
     card.innerHTML = '<div class="sz-top">' +
-                       '<span class="sz">' + sz.w + ' × ' + sz.h + '</span>' +
+                       '<span class="sz">' + (sz.phone ? phoneIcon(sz.w > sz.h) : '') + sz.w + ' × ' + sz.h + '</span>' +
                        '<span class="sz-ok" title="' + store.badgeTitle + '">' + store.badge + '</span>' +
                      '</div>' +
                      '<div class="sz-note">' + (sz.note || '&nbsp;') + '</div>';
