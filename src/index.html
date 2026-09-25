@@ -958,7 +958,8 @@
     line-height: 1.2;
     white-space: nowrap;
   }
-  .size-card .sz-phone {
+  .size-card .sz-phone,
+  .size-card .sz-watch {
     display: inline-block;
     vertical-align: middle;
     margin: -2px 4px 0 0;
@@ -3468,7 +3469,13 @@ const SHOT_STORES = {
       { w: 1242, h: 2688, note: 'iPhone, portrait',  phone: true },
       { w: 2688, h: 1242, note: 'iPhone, landscape', phone: true },
       { w: 1284, h: 2778, note: 'iPhone, portrait',  phone: true },
-      { w: 2778, h: 1284, note: 'iPhone, landscape', phone: true }
+      { w: 2778, h: 1284, note: 'iPhone, landscape', phone: true },
+      { w: 422, h: 514, note: 'Apple Watch Ultra 3', watch: true },
+      { w: 410, h: 502, note: 'Apple Watch Ultra 3', watch: true },
+      { w: 416, h: 496, note: 'Apple Watch Series 11', watch: true },
+      { w: 396, h: 484, note: 'Apple Watch Series 9', watch: true },
+      { w: 368, h: 448, note: 'Apple Watch Series 6', watch: true },
+      { w: 312, h: 390, note: 'Apple Watch Series 3', watch: true }
     ]
   },
   microsoft: {
@@ -3510,6 +3517,9 @@ function phoneIcon(landscape) {
     : '<svg class="sz-phone" width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="0.75" width="8" height="14.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="7" y1="12.5" x2="9" y2="12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
 }
 
+// Watch outline shown on Apple Watch sizes.
+const WATCH_ICON = '<svg class="sz-watch" width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 3.5V1.5a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v2M5.5 12.5v2a.75.75 0 0 0 .75.75h3.5a.75.75 0 0 0 .75-.75v-2" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="3.75" y="3.5" width="8.5" height="9" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="13.5" y1="6.75" x2="13.5" y2="8.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+
 function buildSizeCards() {
   const store = SHOT_STORES[shotStore];
   document.getElementById('storeApple').classList.toggle('active', shotStore === 'apple');
@@ -3522,7 +3532,7 @@ function buildSizeCards() {
     const card = document.createElement('div');
     card.className = 'size-card' + (sz.w === shotSize.w && sz.h === shotSize.h ? ' active' : '');
     card.innerHTML = '<div class="sz-top">' +
-                       '<span class="sz">' + (sz.phone ? phoneIcon(sz.w > sz.h) : '') + sz.w + ' × ' + sz.h + '</span>' +
+                       '<span class="sz">' + (sz.phone ? phoneIcon(sz.w > sz.h) : sz.watch ? WATCH_ICON : '') + sz.w + ' × ' + sz.h + '</span>' +
                        '<span class="sz-ok" title="' + store.badgeTitle + '">' + store.badge + '</span>' +
                      '</div>' +
                      '<div class="sz-note">' + (sz.note || '&nbsp;') + '</div>';
