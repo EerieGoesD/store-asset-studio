@@ -953,62 +953,53 @@
     padding: 26px 10px;
   }
 
-  .size-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-  }
-  .size-card {
+  .size-select {
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 7px 9px;
     cursor: pointer;
-    transition: all 0.15s;
   }
-  .size-card:hover { border-color: var(--muted); }
-  .size-card.active {
-    border-color: var(--accent);
-    background: rgba(255,107,43,0.06);
+  .size-select:hover { border-color: var(--muted); }
+  .size-select:focus { outline: none; border-color: var(--accent); }
+
+  /* Every loaded screenshot as it will come out, redrawn on each change.
+     The block keeps room for one row of previews; the options above it
+     scroll inside themselves when the window is short. */
+  .preview-block { min-height: 190px; }
+  .preview-grid {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    align-content: start;
+    padding-right: 4px;
   }
-  .size-card .sz-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px;
-  }
-  .size-card .sz {
-    font-family: var(--mono);
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.2;
-    white-space: nowrap;
-  }
-  .size-card .sz-phone,
-  .size-card .sz-watch {
-    display: inline-block;
-    vertical-align: middle;
-    margin: -2px 4px 0 0;
-  }
-  .size-card .sz-ok {
-    flex: 0 0 auto;
-    font-family: var(--mono);
-    font-size: 7px;
-    letter-spacing: 0.2px;
-    text-transform: uppercase;
-    color: var(--success);
-    background: rgba(61,230,142,0.10);
-    border: 1px solid rgba(61,230,142,0.25);
+  .preview-grid .shot-empty { grid-column: 1 / -1; }
+  .preview-item { min-width: 0; }
+  .preview-item canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--border);
     border-radius: 4px;
-    padding: 1px 3px;
-    white-space: nowrap;
+    background: var(--surface2);
   }
-  .size-card .sz-note {
+  .preview-cap {
+    font-family: var(--mono);
     font-size: 9px;
     color: var(--muted);
-    margin-top: 2px;
-    line-height: 1.3;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .store-seg {
@@ -1354,7 +1345,7 @@
           <button id="storeApple" onclick="setShotStore('apple')">Apple App Store</button>
           <button id="storeMicrosoft" onclick="setShotStore('microsoft')">Microsoft Store</button>
         </div>
-        <div class="size-grid" id="sizeGrid"></div>
+        <select class="size-select" id="sizeSelect" onchange="setShotSizeIndex(this.value)"></select>
         <div class="size-note" id="sizeNote"></div>
 
         <div class="block-title" style="margin-top:16px">Background</div>
@@ -1392,6 +1383,13 @@
       </div>
 
       <button id="shotGenerateBtn" onclick="generateShots()" disabled>Resize Screenshots</button>
+    </div>
+
+    <div class="block block-grow preview-block">
+      <div class="block-title">Preview</div>
+      <div class="preview-grid" id="shotPreview">
+        <div class="shot-empty">Load screenshots to see them as they will come out.</div>
+      </div>
     </div>
 
     <div class="block">
@@ -3468,39 +3466,28 @@ function setShotStore(key) {
   shotStore = key;
   const store = SHOT_STORES[key];
   shotSize = store.sizes[store.defaultIndex];
-  buildSizeCards();
+  buildSizeSelect();
   renderShotList();
 }
 
-// Phone outline shown on iPhone sizes, turned sideways for landscape.
-function phoneIcon(landscape) {
-  return landscape
-    ? '<svg class="sz-phone" width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><rect x="0.75" y="4" width="14.5" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="12.5" y1="7" x2="12.5" y2="9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'
-    : '<svg class="sz-phone" width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="0.75" width="8" height="14.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="7" y1="12.5" x2="9" y2="12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
-}
-
-// Watch outline shown on Apple Watch sizes.
-const WATCH_ICON = '<svg class="sz-watch" width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 3.5V1.5a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v2M5.5 12.5v2a.75.75 0 0 0 .75.75h3.5a.75.75 0 0 0 .75-.75v-2" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="3.75" y="3.5" width="8.5" height="9" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="13.5" y1="6.75" x2="13.5" y2="8.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
-
-function buildSizeCards() {
+// One dropdown holding every size the store accepts, each with its note.
+function buildSizeSelect() {
   const store = SHOT_STORES[shotStore];
   document.getElementById('storeApple').classList.toggle('active', shotStore === 'apple');
   document.getElementById('storeMicrosoft').classList.toggle('active', shotStore === 'microsoft');
   document.getElementById('sizeNote').textContent = store.note;
 
-  const grid = document.getElementById('sizeGrid');
-  grid.innerHTML = '';
-  store.sizes.forEach(sz => {
-    const card = document.createElement('div');
-    card.className = 'size-card' + (sz.w === shotSize.w && sz.h === shotSize.h ? ' active' : '');
-    card.innerHTML = '<div class="sz-top">' +
-                       '<span class="sz">' + (sz.phone ? phoneIcon(sz.w > sz.h) : sz.watch ? WATCH_ICON : '') + sz.w + ' × ' + sz.h + '</span>' +
-                       '<span class="sz-ok" title="' + store.badgeTitle + '">' + store.badge + '</span>' +
-                     '</div>' +
-                     '<div class="sz-note">' + (sz.note || '&nbsp;') + '</div>';
-    card.onclick = () => { shotSize = sz; buildSizeCards(); renderShotList(); };
-    grid.appendChild(card);
-  });
+  const sel = document.getElementById('sizeSelect');
+  sel.innerHTML = store.sizes.map((sz, i) =>
+    '<option value="' + i + '">' + sz.w + ' × ' + sz.h + (sz.note ? '  ·  ' + sz.note : '') + '</option>'
+  ).join('');
+  sel.value = String(Math.max(0, store.sizes.findIndex(sz => sz.w === shotSize.w && sz.h === shotSize.h)));
+}
+
+function setShotSizeIndex(index) {
+  const store = SHOT_STORES[shotStore];
+  shotSize = store.sizes[Number(index)] || store.sizes[store.defaultIndex];
+  renderShotList();
 }
 
 function setShotColor(value) {
@@ -3512,6 +3499,7 @@ function setShotColor(value) {
   document.querySelectorAll('.swatch').forEach(sw => {
     sw.classList.toggle('active', sw.dataset.color.toUpperCase() === hex.toUpperCase());
   });
+  renderShotPreview();
 }
 
 // Accepts "#abc", "abc", "#aabbcc" or "aabbcc" and returns "#AABBCC".
@@ -3589,9 +3577,9 @@ function renderShotList() {
       dims.className = 'shot-dims';
       // Warn when padding cannot fit it, because then it gets shrunk.
       const tooBig = s.width > shotSize.w || s.height > shotSize.h;
-      dims.textContent = s.width + ' × ' + s.height +
-        (tooBig ? '  → shrunk to fit' : '  → padded');
-      if (tooBig) dims.classList.add('shot-warn');
+      dims.textContent = s.width + ' × ' + s.height + '  → ' +
+        (shotFit === 'crop' ? 'cropped to fill' : shotFit === 'fit' ? 'scaled to fill' : tooBig ? 'shrunk to fit' : 'padded');
+      if (shotFit === 'pad' && tooBig) dims.classList.add('shot-warn');
       meta.appendChild(name);
       meta.appendChild(dims);
 
@@ -3608,6 +3596,7 @@ function renderShotList() {
     });
   }
   updateShotSummary();
+  renderShotPreview();
 }
 
 function updateShotSummary() {
@@ -3618,7 +3607,7 @@ function updateShotSummary() {
     bar.textContent = 'No screenshots loaded.';
     return;
   }
-  const shrunk = shots.filter(s => s.width > shotSize.w || s.height > shotSize.h).length;
+  const shrunk = shotFit === 'pad' ? shots.filter(s => s.width > shotSize.w || s.height > shotSize.h).length : 0;
   bar.innerHTML =
     '<strong style="color:var(--text)">' + shots.length + '</strong> screenshot' +
     (shots.length === 1 ? '' : 's') + ' → ' + shotSize.w + ' × ' + shotSize.h +
@@ -3626,9 +3615,9 @@ function updateShotSummary() {
     (shrunk > 0 ? '<br><span style="color:var(--accent2)">' + shrunk + ' larger than the canvas, so shrunk to fit.</span>' : '');
 }
 
-// Paints one screenshot centred on the chosen canvas.
-function renderShotCanvas(shot) {
-  const W = shotSize.w, H = shotSize.h;
+// Paints one screenshot centred on the chosen canvas (or a smaller one of
+// the same shape, for the preview).
+function renderShotCanvas(shot, W = shotSize.w, H = shotSize.h) {
   const canvas = document.createElement('canvas');
   canvas.width = W;
   canvas.height = H;
@@ -3653,6 +3642,29 @@ function renderShotCanvas(shot) {
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(shot.img, Math.round((W - w) / 2), Math.round((H - h) / 2), w, h);
   return canvas;
+}
+
+// The same drawing as the output, at a size that fits the preview grid.
+function renderShotPreview() {
+  const el = document.getElementById('shotPreview');
+  el.innerHTML = '';
+  if (shots.length === 0) {
+    el.innerHTML = '<div class="shot-empty">Load screenshots to see them as they will come out.</div>';
+    return;
+  }
+  const k = 320 / Math.max(shotSize.w, shotSize.h);
+  const W = Math.max(1, Math.round(shotSize.w * k));
+  const H = Math.max(1, Math.round(shotSize.h * k));
+  shots.forEach(s => {
+    const item = document.createElement('div');
+    item.className = 'preview-item';
+    item.appendChild(renderShotCanvas(s, W, H));
+    const cap = document.createElement('div');
+    cap.className = 'preview-cap';
+    cap.textContent = s.name;
+    item.appendChild(cap);
+    el.appendChild(item);
+  });
 }
 
 function shotOutputName(shot, index) {
@@ -3729,7 +3741,7 @@ async function generateShots() {
 }
 
 function initShots() {
-  buildSizeCards();
+  buildSizeSelect();
   setShotColor('#000000');
 
   const dz = document.getElementById('shotDrop');

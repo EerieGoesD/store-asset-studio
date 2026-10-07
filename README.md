@@ -90,7 +90,7 @@ The Windows controls apply to every Microsoft Store asset, including the `.ico`.
 
 ## Screenshots
 
-The **Screenshots** tab resizes existing screenshots onto a store-accepted canvas. Drop in as many as you like, pick **Apple App Store** or **Microsoft Store**, and choose one of that store's accepted sizes. You can set the background colour, and choose whether to pad without enlarging (keeps the picture sharp), scale up to fill the canvas, or crop to fill it (trims the edges of a picture of another shape, so no bands of background colour are left, e.g. a 3:2 image on the 16:9 App Store header canvas).
+The **Screenshots** tab resizes existing screenshots onto a store-accepted canvas. Drop in as many as you like, pick **Apple App Store** or **Microsoft Store**, and choose one of that store's accepted sizes. You can set the background colour, and choose whether to pad without enlarging (keeps the picture sharp), scale up to fill the canvas, or crop to fill it (trims the edges of a picture of another shape, so no bands of background colour are left, e.g. a 3:2 image on the 16:9 App Store header canvas). A preview shows every loaded screenshot as it will come out, and redraws as you change the size, background or scaling.
 
 ## Options
 
