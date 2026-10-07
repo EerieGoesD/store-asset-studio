@@ -1379,6 +1379,10 @@
           <div class="toggle-box"></div>
           <span>Scale up to fill the canvas</span>
         </div>
+        <div class="toggle-option" id="toggleShotCrop" onclick="setShotFit('crop')" style="margin-top:8px">
+          <div class="toggle-box"></div>
+          <span>Crop to fill the canvas (trims the edges, no colour bands)</span>
+        </div>
 
         <div class="block-title" style="margin-top:16px">Output</div>
         <div class="toggle-option on" id="toggleShotZip" onclick="toggleShotZip()">
@@ -3456,7 +3460,7 @@ let shots = [];                 // { img, name, width, height }
 let shotStore = 'apple';
 let shotSize = SHOT_STORES.apple.sizes[SHOT_STORES.apple.defaultIndex];
 let shotColor = '#000000';
-let shotFit = 'pad';            // 'pad' = never enlarge, 'fit' = scale to fill
+let shotFit = 'pad';            // 'pad' = never enlarge, 'fit' = scale to fill, 'crop' = cover and trim
 let shotZip = true;
 
 function setShotStore(key) {
@@ -3522,6 +3526,7 @@ function setShotFit(mode) {
   shotFit = mode;
   setToggleChecked('toggleShotPad', mode === 'pad');
   setToggleChecked('toggleShotFit', mode === 'fit');
+  setToggleChecked('toggleShotCrop', mode === 'crop');
   renderShotList();
 }
 
@@ -3632,10 +3637,15 @@ function renderShotCanvas(shot) {
   ctx.fillStyle = shotColor;
   ctx.fillRect(0, 0, W, H);
 
-  const ratio = Math.min(W / shot.width, H / shot.height);
+  // Crop mode scales until BOTH sides are covered and lets the canvas trim
+  // what spills over, so a picture of another shape (a 3:2 image on a 16:9
+  // canvas) fills it with no bands of background colour down the sides.
+  const ratio = shotFit === 'crop'
+    ? Math.max(W / shot.width, H / shot.height)
+    : Math.min(W / shot.width, H / shot.height);
   // Padding mode never enlarges: a window shot blown up goes soft, and the
   // whole point of padding is to keep it pixel for pixel.
-  const scale = shotFit === 'fit' ? ratio : Math.min(1, ratio);
+  const scale = shotFit === 'pad' ? Math.min(1, ratio) : ratio;
   const w = Math.max(1, Math.round(shot.width * scale));
   const h = Math.max(1, Math.round(shot.height * scale));
 
