@@ -876,142 +876,228 @@
   main.view-hidden { display: none; }
 
   /* ── Screenshot generator ────────────────────────────────── */
+  /* Wide workspace on the left, a fixed settings sidebar on the right. */
+  #viewShots { grid-template-columns: minmax(0, 1fr) 320px; }
+
+  .shots-work { gap: 12px; }
+  .work-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .work-title { display: flex; align-items: center; gap: 8px; }
+  .work-title .block-title { margin-bottom: 0; }
+  .shot-count {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 1px 8px;
+    min-width: 24px;
+    text-align: center;
+  }
+  .shots-work:not(.has-shots) .work-head .log-btn { visibility: hidden; }
+
+  /* Drop area: fills the workspace while empty, a slim strip once loaded. */
   #shotDrop {
-    border: 2px dashed var(--border);
-    border-radius: 10px;
-    padding: 18px 16px;
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
+    gap: 12px;
+    border: 1.5px dashed var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 10px 14px;
     cursor: pointer;
     transition: all 0.2s;
-    background: var(--surface);
   }
   #shotDrop:hover, #shotDrop.drag-over {
     border-color: var(--accent);
     background: rgba(255,107,43,0.04);
   }
+  .drop-icon {
+    flex: 0 0 auto;
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,107,43,0.12);
+    color: var(--accent);
+  }
+  .drop-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .drop-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .shots-work:not(.has-shots) #shotDrop {
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    gap: 14px;
+    padding: 40px 24px;
+  }
+  .shots-work:not(.has-shots) .drop-icon { width: 56px; height: 56px; border-radius: 14px; }
+  .shots-work:not(.has-shots) .drop-icon svg { width: 26px; height: 26px; }
+  .shots-work:not(.has-shots) .drop-title { font-size: 16px; }
+  .shots-work:not(.has-shots) .drop-sub { font-size: 11px; margin-top: 6px; }
 
-  .shot-list {
+  /* One card per screenshot: the original next to how it will come out. */
+  .shot-gallery {
     flex: 1 1 0;
     min-height: 0;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 12px;
+    align-content: start;
     padding-right: 4px;
   }
-  .shot-row {
-    display: flex;
-    align-items: center;
-    gap: 11px;
+  .shots-work:not(.has-shots) .shot-gallery { display: none; }
+  .shot-card {
+    min-width: 0;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 10px;
+    border-radius: 12px;
+    padding: 10px 12px 12px;
   }
-  .shot-thumb {
-    width: 62px; height: 40px;
-    object-fit: contain;
+  .shot-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .shot-idx {
+    flex: 0 0 auto;
+    width: 20px; height: 20px;
+    border-radius: 6px;
     background: var(--surface2);
-    border-radius: 4px;
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
   }
-  .shot-meta { min-width: 0; flex: 1 1 auto; }
   .shot-name {
+    flex: 1 1 auto;
+    min-width: 0;
     font-size: 12px;
+    font-weight: 600;
     color: var(--text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .shot-dims {
+  .shot-chip {
+    flex: 0 0 auto;
     font-family: var(--mono);
-    font-size: 10px;
+    font-size: 9px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
     color: var(--muted);
-    margin-top: 2px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 2px 6px;
+    white-space: nowrap;
   }
-  .shot-warn { color: var(--accent2); }
+  .shot-chip.ok { color: var(--success); background: rgba(61,230,142,0.10); border-color: rgba(61,230,142,0.25); }
+  .shot-chip.warn { color: var(--accent2); background: rgba(255,154,92,0.10); border-color: rgba(255,154,92,0.30); }
   .shot-x {
     flex-shrink: 0;
     background: transparent;
     border: 1px solid var(--border);
     color: var(--muted);
-    border-radius: 5px;
+    border-radius: 6px;
     width: 24px; height: 24px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1;
   }
   .shot-x:hover { color: #fff; border-color: var(--accent); }
-  .shot-empty {
+
+  .shot-compare {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+  }
+  .shot-frame { margin: 0; min-width: 0; }
+  .shot-stage {
+    height: 230px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    padding: 12px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .shot-stage img, .shot-stage canvas {
+    display: block;
+    width: auto; height: auto;
+    max-width: 100%; max-height: 100%;
+    border-radius: 3px;
+    outline: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.5);
+  }
+  .shot-frame figcaption {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 10px;
     color: var(--muted);
+  }
+  .shot-px { font-family: var(--mono); color: var(--text); }
+  .shot-arrow { color: var(--muted); font-size: 14px; text-align: center; margin-bottom: 22px; }
+
+  /* Settings sidebar: the sections scroll together, the button stays put. */
+  .shots-side {
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .side-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0 16px; }
+  .side-sec { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .side-sec:last-child { border-bottom: none; }
+  .side-sec .block-title { margin-bottom: 8px; }
+  .side-foot {
+    flex: 0 0 auto;
+    padding: 14px 16px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+    border-radius: 0 0 12px 12px;
+  }
+  .side-foot-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .side-foot-row .log-btn { flex: 0 0 auto; white-space: nowrap; }
+  .shot-summary {
+    min-width: 0;
+    min-height: 32px;
     font-family: var(--mono);
     font-size: 11px;
-    text-align: center;
-    padding: 26px 10px;
+    line-height: 1.5;
+    color: var(--muted);
   }
+
+  .side-foot .toggle-option { margin-top: 10px; font-size: 12px; color: var(--text); }
 
   .size-select {
     width: 100%;
+    margin-top: 8px;
     font-family: var(--mono);
     font-size: 12px;
     font-weight: 700;
     color: var(--text);
-    background: var(--surface);
+    background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 7px 9px;
+    border-radius: 8px;
+    padding: 8px 9px;
     cursor: pointer;
   }
   .size-select:hover { border-color: var(--muted); }
   .size-select:focus { outline: none; border-color: var(--accent); }
 
-  /* Every loaded screenshot as it will come out, redrawn on each change.
-     The block keeps room for one row of previews; the options above it
-     scroll inside themselves when the window is short. */
-  .preview-block { min-height: 190px; }
-  .preview-grid {
-    flex: 1 1 0;
-    min-height: 0;
-    overflow-y: auto;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    align-content: start;
-    padding-right: 4px;
-  }
-  .preview-grid .shot-empty { grid-column: 1 / -1; }
-  .preview-item { min-width: 0; }
-  .preview-item canvas {
-    display: block;
-    width: 100%;
-    height: auto;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: var(--surface2);
-  }
-  .preview-cap {
-    font-family: var(--mono);
-    font-size: 9px;
-    color: var(--muted);
-    margin-top: 3px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .store-seg {
+  /* Side-by-side choices: the store, and the scaling mode. */
+  .seg {
     display: flex;
     gap: 3px;
-    background: var(--surface);
+    background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 3px;
-    margin-bottom: 8px;
   }
-  .store-seg button {
+  .seg button {
     flex: 1 1 0;
     font-family: var(--sans);
     font-size: 11px;
@@ -1021,13 +1107,13 @@
     background: transparent;
     border: none;
     border-radius: 6px;
-    padding: 6px 8px;
+    padding: 7px 8px;
     cursor: pointer;
     transition: all 0.15s;
     white-space: nowrap;
   }
-  .store-seg button:hover { color: var(--text); }
-  .store-seg button.active {
+  .seg button:hover { color: var(--text); }
+  .seg button.active {
     color: #fff;
     background: var(--surface2);
   }
@@ -1039,34 +1125,33 @@
     margin-top: 8px;
   }
 
-  .swatches { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .swatch {
-    width: 26px; height: 26px;
-    border-radius: 6px;
+  .swatches { display: flex; align-items: center; gap: 6px; }
+  .swatch, .color-input {
+    flex: 0 0 auto;
+    width: 28px; height: 28px;
+    border-radius: 8px;
     border: 1px solid var(--border);
     cursor: pointer;
     transition: all 0.15s;
   }
   .swatch.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(255,107,43,0.25); }
-  .color-input {
-    width: 42px; height: 28px;
-    padding: 0;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    cursor: pointer;
-  }
+  .color-input { padding: 0; background: transparent; overflow: hidden; }
+  .color-input::-webkit-color-swatch-wrapper { padding: 0; }
+  .color-input::-webkit-color-swatch { border: none; border-radius: 7px; }
   .color-hex {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 28px;
     font-family: var(--mono);
     font-size: 11px;
-    color: var(--muted);
-    background: var(--surface);
+    color: var(--text);
+    background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 6px 8px;
-    width: 92px;
+    border-radius: 8px;
+    padding: 0 8px;
     text-transform: uppercase;
   }
+  .color-hex:focus { outline: none; border-color: var(--accent); }
 
   #shotGenerateBtn {
     width: 100%;
@@ -1080,8 +1165,7 @@
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    margin-top: 14px;
-    flex: 0 0 auto;
+    margin-top: 12px;
     transition: all 0.15s;
   }
   #shotGenerateBtn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -1311,44 +1395,49 @@
 <!-- ══ SCREENSHOT GENERATOR ═════════════════════════════════ -->
 <main id="viewShots" class="view-hidden">
 
-  <!-- LEFT: the screenshots to process -->
-  <section class="pane pane-left">
+  <!-- LEFT: the screenshots, each next to how it will come out -->
+  <section class="pane shots-work" id="shotsWork">
 
-    <div class="block">
-      <div class="block-title">Screenshots</div>
-      <div id="shotDrop">
-        <span class="dropzone-icon">🖼️</span>
-        <p class="dropzone-text">Drop screenshots here, or click to choose. Add as many as you like.</p>
-        <input type="file" id="shotInput" accept=".png,.jpg,.jpeg" multiple />
+    <div class="work-head">
+      <div class="work-title">
+        <div class="block-title">Screenshots</div>
+        <span class="shot-count" id="shotCount">0</span>
       </div>
+      <button class="log-btn" onclick="clearShots()">Remove all</button>
     </div>
 
-    <div class="block block-grow">
-      <div class="block-title-row">
-        <div class="block-title">Loaded</div>
-        <button class="log-btn" onclick="clearShots()">Remove all</button>
+    <div id="shotDrop">
+      <div class="drop-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg>
       </div>
-      <div class="shot-list" id="shotList">
-        <div class="shot-empty">Nothing loaded yet.</div>
+      <div class="drop-copy">
+        <div class="drop-title">Drop screenshots here</div>
+        <div class="drop-sub">or click to choose · PNG or JPEG · add as many as you like</div>
       </div>
+      <input type="file" id="shotInput" accept=".png,.jpg,.jpeg" multiple />
     </div>
+
+    <div class="shot-gallery" id="shotList"></div>
 
   </section>
 
-  <!-- RIGHT: size, colour, output -->
-  <section class="pane pane-right">
+  <!-- RIGHT: store, size, colour, scaling, output -->
+  <section class="pane shots-side">
 
-    <div class="block options-block">
-      <div class="block-title">Canvas Size</div>
-      <div class="options-body">
-        <div class="store-seg" id="storeSeg">
+    <div class="side-scroll">
+
+      <div class="side-sec">
+        <div class="block-title">Canvas Size</div>
+        <div class="seg" id="storeSeg">
           <button id="storeApple" onclick="setShotStore('apple')">Apple App Store</button>
           <button id="storeMicrosoft" onclick="setShotStore('microsoft')">Microsoft Store</button>
         </div>
         <select class="size-select" id="sizeSelect" onchange="setShotSizeIndex(this.value)"></select>
         <div class="size-note" id="sizeNote"></div>
+      </div>
 
-        <div class="block-title" style="margin-top:16px">Background</div>
+      <div class="side-sec">
+        <div class="block-title">Background</div>
         <div class="swatches">
           <div class="swatch" data-color="#000000" style="background:#000000" onclick="setShotColor('#000000')"></div>
           <div class="swatch" data-color="#0A0A0C" style="background:#0A0A0C" onclick="setShotColor('#0A0A0C')"></div>
@@ -1360,44 +1449,30 @@
           <input type="text" class="color-hex" id="shotColorHex" value="#000000"
                  onchange="setShotColor(this.value)" spellcheck="false" />
         </div>
-
-        <div class="block-title" style="margin-top:16px">Scaling</div>
-        <div class="toggle-option on" id="toggleShotPad" onclick="setShotFit('pad')">
-          <div class="toggle-box">✓</div>
-          <span>Never enlarge, just pad (keeps the picture sharp)</span>
-        </div>
-        <div class="toggle-option" id="toggleShotFit" onclick="setShotFit('fit')" style="margin-top:8px">
-          <div class="toggle-box"></div>
-          <span>Scale up to fill the canvas</span>
-        </div>
-        <div class="toggle-option" id="toggleShotCrop" onclick="setShotFit('crop')" style="margin-top:8px">
-          <div class="toggle-box"></div>
-          <span>Crop to fill the canvas (trims the edges, no colour bands)</span>
-        </div>
-
-        <div class="block-title" style="margin-top:16px">Output</div>
-        <div class="toggle-option on" id="toggleShotZip" onclick="toggleShotZip()">
-          <div class="toggle-box">✓</div>
-          <span>Save as one ZIP file</span>
-        </div>
       </div>
 
-      <button id="shotGenerateBtn" onclick="generateShots()" disabled>Resize Screenshots</button>
-    </div>
-
-    <div class="block block-grow preview-block">
-      <div class="block-title">Preview</div>
-      <div class="preview-grid" id="shotPreview">
-        <div class="shot-empty">Load screenshots to see them as they will come out.</div>
+      <div class="side-sec">
+        <div class="block-title">Scaling</div>
+        <div class="seg">
+          <button id="toggleShotPad" class="active" onclick="setShotFit('pad')">Pad</button>
+          <button id="toggleShotFit" onclick="setShotFit('fit')">Scale up</button>
+          <button id="toggleShotCrop" onclick="setShotFit('crop')">Crop</button>
+        </div>
+        <div class="size-note" id="shotFitHint">Never enlarge, just pad (keeps the picture sharp)</div>
       </div>
+
     </div>
 
-    <div class="block">
-      <div class="block-title-row">
-        <div class="block-title">Summary</div>
+    <div class="side-foot">
+      <div class="side-foot-row">
+        <div class="shot-summary" id="shotSummary">No screenshots loaded.</div>
         <button class="log-btn" onclick="openLog()">Output Log</button>
       </div>
-      <div class="summary-bar" id="shotSummary">No screenshots loaded.</div>
+      <div class="toggle-option on" id="toggleShotZip" onclick="toggleShotZip()">
+        <div class="toggle-box">✓</div>
+        <span>Save as one ZIP file</span>
+      </div>
+      <button id="shotGenerateBtn" onclick="generateShots()" disabled>Resize Screenshots</button>
     </div>
 
   </section>
@@ -3514,6 +3589,7 @@ function setShotColor(value) {
   document.querySelectorAll('.swatch').forEach(sw => {
     sw.classList.toggle('active', sw.dataset.color.toUpperCase() === hex.toUpperCase());
   });
+  updateShotSummary();
   renderShotPreview();
 }
 
@@ -3525,11 +3601,19 @@ function normaliseHex(value) {
   return '#' + v.toUpperCase();
 }
 
+// The full wording for each scaling mode, shown under the switch.
+const SHOT_FIT_HINTS = {
+  pad: 'Never enlarge, just pad (keeps the picture sharp)',
+  fit: 'Scale up to fill the canvas',
+  crop: 'Crop to fill the canvas (trims the edges, no colour bands)'
+};
+
 function setShotFit(mode) {
   shotFit = mode;
-  setToggleChecked('toggleShotPad', mode === 'pad');
-  setToggleChecked('toggleShotFit', mode === 'fit');
-  setToggleChecked('toggleShotCrop', mode === 'crop');
+  document.getElementById('toggleShotPad').classList.toggle('active', mode === 'pad');
+  document.getElementById('toggleShotFit').classList.toggle('active', mode === 'fit');
+  document.getElementById('toggleShotCrop').classList.toggle('active', mode === 'crop');
+  document.getElementById('shotFitHint').textContent = SHOT_FIT_HINTS[mode];
   renderShotList();
 }
 
@@ -3569,47 +3653,53 @@ function clearShots() {
   renderShotList();
 }
 
+// What happens to one screenshot on the chosen canvas, shown on its card.
+function shotStatus(s) {
+  if (s.width === shotSize.w && s.height === shotSize.h) return { text: 'Exact size', cls: 'ok' };
+  if (shotFit === 'crop') return { text: 'Cropped to fill', cls: '' };
+  if (shotFit === 'fit') return { text: 'Scaled to fill', cls: '' };
+  if (s.width > shotSize.w || s.height > shotSize.h) return { text: 'Shrunk to fit', cls: 'warn' };
+  return { text: 'Padded', cls: '' };
+}
+
+// One card per screenshot: the original next to what it will come out as.
 function renderShotList() {
-  const el = document.getElementById('shotList');
-  el.innerHTML = '';
-  if (shots.length === 0) {
-    el.innerHTML = '<div class="shot-empty">Nothing loaded yet.</div>';
-  } else {
-    shots.forEach((s, i) => {
-      const row = document.createElement('div');
-      row.className = 'shot-row';
-
-      const thumb = document.createElement('img');
-      thumb.className = 'shot-thumb';
-      thumb.src = s.img.src;
-
-      const meta = document.createElement('div');
-      meta.className = 'shot-meta';
-      const name = document.createElement('div');
-      name.className = 'shot-name';
-      name.textContent = s.name;
-      const dims = document.createElement('div');
-      dims.className = 'shot-dims';
-      // Warn when padding cannot fit it, because then it gets shrunk.
-      const tooBig = s.width > shotSize.w || s.height > shotSize.h;
-      dims.textContent = s.width + ' × ' + s.height + '  → ' +
-        (shotFit === 'crop' ? 'cropped to fill' : shotFit === 'fit' ? 'scaled to fill' : tooBig ? 'shrunk to fit' : 'padded');
-      if (shotFit === 'pad' && tooBig) dims.classList.add('shot-warn');
-      meta.appendChild(name);
-      meta.appendChild(dims);
-
-      const x = document.createElement('button');
-      x.className = 'shot-x';
-      x.textContent = '✕';
-      x.title = 'Remove';
-      x.onclick = () => removeShot(i);
-
-      row.appendChild(thumb);
-      row.appendChild(meta);
-      row.appendChild(x);
-      el.appendChild(row);
-    });
-  }
+  const list = document.getElementById('shotList');
+  list.innerHTML = '';
+  shots.forEach((s, i) => {
+    const st = shotStatus(s);
+    const card = document.createElement('div');
+    card.className = 'shot-card';
+    card.innerHTML =
+      '<div class="shot-card-head">' +
+        '<span class="shot-idx">' + (i + 1) + '</span>' +
+        '<div class="shot-name"></div>' +
+        '<span class="shot-chip' + (st.cls ? ' ' + st.cls : '') + '">' + st.text + '</span>' +
+        '<button class="shot-x" title="Remove">✕</button>' +
+      '</div>' +
+      '<div class="shot-compare">' +
+        '<figure class="shot-frame">' +
+          '<div class="shot-stage shot-orig"></div>' +
+          '<figcaption><span>Original</span><span class="shot-px">' + s.width + ' × ' + s.height + '</span></figcaption>' +
+        '</figure>' +
+        '<div class="shot-arrow" aria-hidden="true">→</div>' +
+        '<figure class="shot-frame">' +
+          '<div class="shot-stage shot-out"></div>' +
+          '<figcaption><span>Output</span><span class="shot-px">' + shotSize.w + ' × ' + shotSize.h + '</span></figcaption>' +
+        '</figure>' +
+      '</div>';
+    const name = card.querySelector('.shot-name');
+    name.textContent = s.name;
+    name.title = s.name;
+    const img = document.createElement('img');
+    img.src = s.img.src;
+    img.alt = '';
+    card.querySelector('.shot-orig').appendChild(img);
+    card.querySelector('.shot-x').onclick = () => removeShot(i);
+    list.appendChild(card);
+  });
+  document.getElementById('shotsWork').classList.toggle('has-shots', shots.length > 0);
+  document.getElementById('shotCount').textContent = shots.length;
   updateShotSummary();
   renderShotPreview();
 }
@@ -3630,16 +3720,17 @@ function updateShotSummary() {
     (shrunk > 0 ? '<br><span style="color:var(--accent2)">' + shrunk + ' larger than the canvas, so shrunk to fit.</span>' : '');
 }
 
-// Paints one screenshot centred on the chosen canvas (or a smaller one of
-// the same shape, for the preview).
-function renderShotCanvas(shot, W = shotSize.w, H = shotSize.h) {
+// Paints one screenshot centred on the chosen canvas. k shrinks the whole
+// result for the on-screen preview without changing where anything lands.
+function renderShotCanvas(shot, k = 1) {
+  const W = shotSize.w, H = shotSize.h;
   const canvas = document.createElement('canvas');
-  canvas.width = W;
-  canvas.height = H;
+  canvas.width = Math.max(1, Math.round(W * k));
+  canvas.height = Math.max(1, Math.round(H * k));
   const ctx = canvas.getContext('2d');
 
   ctx.fillStyle = shotColor;
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Crop mode scales until BOTH sides are covered and lets the canvas trim
   // what spills over, so a picture of another shape (a 3:2 image on a 16:9
@@ -3649,36 +3740,23 @@ function renderShotCanvas(shot, W = shotSize.w, H = shotSize.h) {
     : Math.min(W / shot.width, H / shot.height);
   // Padding mode never enlarges: a window shot blown up goes soft, and the
   // whole point of padding is to keep it pixel for pixel.
-  const scale = shotFit === 'pad' ? Math.min(1, ratio) : ratio;
+  const scale = (shotFit === 'pad' ? Math.min(1, ratio) : ratio) * k;
   const w = Math.max(1, Math.round(shot.width * scale));
   const h = Math.max(1, Math.round(shot.height * scale));
 
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(shot.img, Math.round((W - w) / 2), Math.round((H - h) / 2), w, h);
+  ctx.drawImage(shot.img, Math.round((canvas.width - w) / 2), Math.round((canvas.height - h) / 2), w, h);
   return canvas;
 }
 
-// The same drawing as the output, at a size that fits the preview grid.
+// Redraws the output side of every card, e.g. after a colour change.
 function renderShotPreview() {
-  const el = document.getElementById('shotPreview');
-  el.innerHTML = '';
-  if (shots.length === 0) {
-    el.innerHTML = '<div class="shot-empty">Load screenshots to see them as they will come out.</div>';
-    return;
-  }
-  const k = 320 / Math.max(shotSize.w, shotSize.h);
-  const W = Math.max(1, Math.round(shotSize.w * k));
-  const H = Math.max(1, Math.round(shotSize.h * k));
-  shots.forEach(s => {
-    const item = document.createElement('div');
-    item.className = 'preview-item';
-    item.appendChild(renderShotCanvas(s, W, H));
-    const cap = document.createElement('div');
-    cap.className = 'preview-cap';
-    cap.textContent = s.name;
-    item.appendChild(cap);
-    el.appendChild(item);
+  const k = Math.min(1, 560 / Math.max(shotSize.w, shotSize.h));
+  document.querySelectorAll('#shotList .shot-out').forEach((stage, i) => {
+    if (!shots[i]) return;
+    stage.innerHTML = '';
+    stage.appendChild(renderShotCanvas(shots[i], k));
   });
 }
 
