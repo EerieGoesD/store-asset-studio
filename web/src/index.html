@@ -38,20 +38,28 @@
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #1a1a24;
-    --border: #2a2a3a;
-    --accent: #ff6b2b;
-    --accent2: #ff9a5c;
-    --text: #e8e8f0;
-    --muted: #6b6b88;
-    --success: #3de68e;
-    --mono: 'JetBrains Mono', monospace;
+    --bg: #0a0a0c;
+    --surface: #111114;
+    --surface2: #18181c;
+    --border: #2a2a31;
+    --tick-border: #6b6b78;
+    /* One accent. Filled controls carry white text on --accent (5.6:1) and
+       darken to --accent-h on hover; --accent2 is the same brick lifted for
+       text on the dark surfaces (6:1 or better). */
+    --accent: #b4432a;
+    --accent-h: #a63d26;
+    --accent2: #e07a5f;
+    --accent-tint: rgba(180,67,42,0.12);
+    --text: #d4d4d8;
+    --muted: #9b9ba6;
+    --danger: #ef4444;
+    --radius: 8px;
+    /* One family for everything; --mono is kept as a name so older rules
+       still resolve, and points at the same face. */
     --sans: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    --mono: var(--sans);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -60,21 +68,11 @@
     background: var(--bg);
     color: var(--text);
     font-family: var(--sans);
+    font-variant-numeric: tabular-nums;
     height: 100vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-  }
-
-  /* Noise texture overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.5;
   }
 
   header {
@@ -83,8 +81,7 @@
     z-index: 10;
     padding: 14px 24px;
     border-bottom: 1px solid var(--border);
-    background: rgba(17,17,24,0.92);
-    backdrop-filter: blur(8px);
+    background: var(--surface);
   }
 
   .header-inner {
@@ -95,22 +92,20 @@
 
   .app-logo {
     width: 38px; height: 38px;
-    border-radius: 9px;
+    border-radius: var(--radius);
     flex-shrink: 0;
   }
 
   h1 {
     font-size: 19px;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.15;
-    color: #fff;
-    letter-spacing: 0.2px;
+    color: var(--text);
   }
 
   .subtitle {
     color: var(--muted);
-    font-size: 12px;
-    font-family: var(--mono);
+    font-size: 13px;
     line-height: 1.4;
     margin-top: 2px;
   }
@@ -152,26 +147,22 @@
   .block-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
   .block-title-row > .block-title { margin-bottom: 0; }
   .log-btn {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.5px;
-    text-transform: none;
-    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--text);
     background: transparent;
     border: 1px solid var(--border);
-    padding: 3px 10px;
-    border-radius: 5px;
+    padding: 4px 10px;
+    border-radius: var(--radius);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: border-color 0.15s;
   }
-  .log-btn:hover { color: var(--text); border-color: var(--muted); }
+  .log-btn:hover { border-color: var(--tick-border); }
 
   .block-title {
     font-family: var(--sans);
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    font-size: 13px;
+    font-weight: 600;
     color: var(--muted);
     margin-bottom: 8px;
   }
@@ -213,24 +204,21 @@
     color: #fff;
     font-weight: 700;
     font-size: 11px;
-    border-radius: 4px;
+    border-radius: var(--radius);
     display: flex; align-items: center; justify-content: center;
-    font-family: var(--mono);
     flex-shrink: 0;
   }
 
   .step-title {
     font-size: 13px;
     font-weight: 700;
-    color: #fff;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    color: var(--text);
   }
 
   /* Drop zone */
   #dropzone {
-    border: 2px dashed var(--border);
-    border-radius: 10px;
+    border: 1px dashed var(--tick-border);
+    border-radius: var(--radius);
     padding: 11px 16px;
     display: flex;
     align-items: center;
@@ -244,8 +232,8 @@
   }
 
   #dropzone:hover, #dropzone.drag-over {
-    border-color: var(--accent);
-    background: rgba(255,107,43,0.04);
+    border-color: var(--accent2);
+    background: var(--accent-tint);
   }
 
   #dropzone.has-image {
@@ -256,15 +244,14 @@
   }
 
   .dropzone-icon {
-    font-size: 20px;
-    line-height: 1;
+    display: flex;
+    color: var(--accent2);
     flex-shrink: 0;
   }
 
   .dropzone-text {
     color: var(--muted);
-    font-size: 12.5px;
-    font-family: var(--mono);
+    font-size: 13px;
     line-height: 1.3;
     display: flex;
     align-items: baseline;
@@ -273,8 +260,8 @@
     justify-content: center;
   }
 
-  .dropzone-text strong { color: var(--accent); cursor: pointer; }
-  .dz-hint { color: var(--muted); opacity: 0.6; font-size: 11px; }
+  .dropzone-text strong { color: var(--accent2); cursor: pointer; }
+  .dz-hint { color: var(--muted); font-size: 12px; }
 
   #fileInput, #shotInput { display: none; }
 
@@ -287,8 +274,8 @@
   #imagePreview img {
     width: 52px; height: 52px;
     object-fit: contain;
-    border-radius: 8px;
-    background: repeating-conic-gradient(#1a1a24 0% 25%, #111118 0% 50%) 0 0/12px 12px;
+    border-radius: var(--radius);
+    background: repeating-conic-gradient(var(--surface2) 0% 25%, var(--surface) 0% 50%) 0 0/12px 12px;
     flex-shrink: 0;
   }
 
@@ -297,7 +284,7 @@
   }
 
   .preview-name {
-    color: #fff;
+    color: var(--text);
     font-weight: 700;
     font-size: 15px;
     margin-bottom: 4px;
@@ -311,18 +298,18 @@
   }
 
   .btn-change {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent);
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--accent2);
     background: transparent;
     border: 1px solid var(--accent);
     padding: 4px 10px;
-    border-radius: 4px;
+    border-radius: var(--radius);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s;
   }
 
-  .btn-change:hover { background: rgba(255,107,43,0.1); }
+  .btn-change:hover { background: var(--accent-tint); }
 
   /* Platform grid */
   .platforms-grid {
@@ -336,8 +323,8 @@
 
   .platform-card {
     background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     overflow: hidden;
     cursor: pointer;
     transition: all 0.2s;
@@ -345,13 +332,12 @@
   }
 
   .platform-card:hover {
-    border-color: var(--muted);
-    transform: translateY(-1px);
+    border-color: var(--tick-border);
   }
 
   .platform-card.selected {
     border-color: var(--accent);
-    background: rgba(255,107,43,0.04);
+    background: var(--accent-tint);
   }
 
   .platform-header {
@@ -361,22 +347,17 @@
     gap: 8px;
   }
 
-  .platform-icon {
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-
   .platform-name {
     font-weight: 700;
-    font-size: 12.5px;
-    color: #fff;
+    font-size: 13px;
+    color: var(--text);
     flex: 1;
     line-height: 1.2;
   }
 
   .platform-check {
     width: 18px; height: 18px;
-    border: 2px solid var(--border);
+    border: 2px solid var(--tick-border);
     border-radius: 4px;
     flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
@@ -398,9 +379,7 @@
   .asset-panel {
     display: none;
     margin-top: 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    border-top: 1px solid var(--border);
     overflow: hidden;
   }
 
@@ -416,15 +395,14 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 9px 14px;
+    padding: 10px 0;
     border-bottom: 1px solid var(--border);
-    background: var(--surface2);
   }
 
   .asset-panel-title {
     font-size: 13px;
-    font-weight: 700;
-    color: #fff;
+    font-weight: 600;
+    color: var(--text);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -436,18 +414,18 @@
   }
 
   .btn-sm {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--text);
     background: transparent;
     border: 1px solid var(--border);
-    padding: 3px 8px;
-    border-radius: 4px;
+    padding: 3px 9px;
+    border-radius: var(--radius);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: border-color 0.15s;
   }
 
-  .btn-sm:hover { color: var(--text); border-color: var(--muted); }
+  .btn-sm:hover { border-color: var(--tick-border); }
 
   .asset-section {
     border-bottom: 1px solid var(--border);
@@ -456,17 +434,14 @@
   .asset-section:last-child { border-bottom: none; }
 
   .asset-section-title {
-    padding: 7px 14px;
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--accent);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    background: rgba(255,107,43,0.04);
+    padding: 10px 0 2px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
   }
 
   .asset-list {
-    padding: 8px 14px;
+    padding: 6px 0 10px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
     gap: 3px;
@@ -477,17 +452,17 @@
     align-items: center;
     gap: 8px;
     padding: 6px 8px;
-    border-radius: 6px;
+    border-radius: var(--radius);
     cursor: pointer;
     transition: background 0.15s;
   }
 
-  .asset-item:hover { background: rgba(255,255,255,0.03); }
+  .asset-item:hover { background: var(--surface2); }
 
   .asset-cb {
-    width: 14px; height: 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 3px;
+    width: 15px; height: 15px;
+    border: 2px solid var(--tick-border);
+    border-radius: 4px;
     flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.15s;
@@ -501,15 +476,13 @@
   }
 
   .asset-name {
-    font-family: var(--mono);
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text);
     flex: 1;
   }
 
   .asset-size {
-    font-family: var(--mono);
-    font-size: 10px;
+    font-size: 11px;
     color: var(--muted);
   }
 
@@ -529,23 +502,34 @@
   }
 
   .toggle-box {
+    flex: 0 0 auto;
     width: 18px; height: 18px;
-    border: 1.5px solid var(--border);
+    border: 2px solid var(--tick-border);
     border-radius: 4px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px;
-    transition: all 0.15s;
+    transition: background 0.15s, border-color 0.15s;
   }
 
   .toggle-option.on .toggle-box {
-    background: var(--success);
-    border-color: var(--success);
-    color: #000;
+    background: var(--accent);
+    border-color: var(--accent);
   }
+  /* Ticks are drawn, not typed: the ✓ text in the box is hidden. */
+  .toggle-box, .platform-check, .asset-cb { font-size: 0; color: transparent; }
+  .toggle-option.on .toggle-box::after,
+  .platform-card.selected .platform-check::after,
+  .asset-item.checked .asset-cb::after {
+    content: '';
+    width: 4px; height: 8px;
+    margin-top: -2px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
 
   .toggle-label {
     font-size: 13px;
-    font-family: var(--mono);
     color: var(--muted);
   }
 
@@ -553,8 +537,7 @@
 
   .option-help {
     margin-top: 3px;
-    font-family: var(--mono);
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.35;
     color: var(--muted);
   }
@@ -563,20 +546,17 @@
   #androidPreview, #windowsPreview, #macosPreview {
     display: none;
     margin: 4px 0 10px;
-    padding: 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
   }
   #androidPreview.visible, #windowsPreview.visible, #macosPreview.visible { display: block; }
 
   .ap-title {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 8px;
   }
 
   .ap-stage {
@@ -585,7 +565,7 @@
     justify-content: center;
     gap: 20px;
     padding: 10px 8px;
-    border-radius: 8px;
+    border-radius: var(--radius);
     /* gentle wallpaper so the white icon reads like it would on a home screen */
     background: linear-gradient(135deg, #2b3a67 0%, #44307a 50%, #7a2f5f 100%);
   }
@@ -619,16 +599,13 @@
   #windowsPreview .ap-move-hint, #macosPreview .ap-move-hint { margin-right: -8px; }
 
   .ap-shape-label {
-    font-family: var(--mono);
-    font-size: 10px;
+    font-size: 11px;
     color: rgba(255,255,255,0.85);
-    letter-spacing: 0.5px;
   }
 
   .ap-empty {
     text-align: center;
-    font-family: var(--mono);
-    font-size: 11px;
+    font-size: 12px;
     color: var(--muted);
     padding: 26px 8px;
   }
@@ -641,18 +618,16 @@
   }
 
   .ap-slider-label {
-    font-family: var(--mono);
-    font-size: 11px;
+    font-size: 12px;
     color: var(--muted);
     flex-shrink: 0;
     width: 48px;
   }
 
   .ap-slider-val {
-    font-family: var(--mono);
     font-size: 12px;
-    font-weight: 700;
-    color: var(--accent);
+    font-weight: 600;
+    color: var(--text);
     flex-shrink: 0;
     width: 38px;
     text-align: right;
@@ -700,8 +675,7 @@
 
   .ap-hint {
     margin-top: 8px;
-    font-family: var(--mono);
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.4;
     color: var(--muted);
   }
@@ -713,23 +687,19 @@
     background: var(--accent);
     color: #fff;
     font-family: var(--sans);
-    font-weight: 800;
-    font-size: 15px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 14px;
     border: none;
-    border-radius: 10px;
+    border-radius: var(--radius);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s;
     position: relative;
     overflow: hidden;
     margin-top: 4px;
   }
 
   #generateBtn:hover:not(:disabled) {
-    background: var(--accent2);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 32px rgba(255,107,43,0.3);
+    background: var(--accent-h);
   }
 
   #generateBtn:disabled {
@@ -758,21 +728,20 @@
   /* Output Log (shown in a modal popup) */
   #logOutput {
     padding: 14px 16px;
-    font-family: var(--mono);
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.8;
     color: var(--muted);
     max-height: 60vh;
     overflow-y: auto;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius);
   }
 
-  #logOutput .log-ok { color: var(--success); }
+  #logOutput .log-ok { color: var(--text); }
   #logOutput .log-skip { color: var(--muted); }
-  #logOutput .log-err { color: #ff5555; }
-  #logOutput .log-info { color: var(--accent2); }
+  #logOutput .log-err { color: var(--danger); }
+  #logOutput .log-info { color: var(--muted); }
 
   /* Divider */
   .divider {
@@ -787,9 +756,8 @@
     height: 74px;
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius);
     padding: 9px 14px;
-    font-family: var(--mono);
     font-size: 12px;
     line-height: 1.5;
     color: var(--muted);
@@ -801,7 +769,7 @@
   }
 
   .summary-bar .count {
-    color: var(--accent);
+    color: var(--text);
     font-weight: 700;
   }
 
@@ -816,38 +784,38 @@
     background: var(--surface); border-top: 1px solid var(--border);
     padding: 14px 24px; display: none; flex-wrap: wrap;
     align-items: center; justify-content: center; gap: 16px;
-    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    font-size: 12px; color: var(--muted);
   }
   .cookie-banner button {
-    font-family: var(--mono); font-size: 11px; padding: 6px 16px;
-    border-radius: 5px; cursor: pointer; border: 1px solid var(--border);
+    font-family: var(--sans); font-size: 12px; padding: 6px 16px;
+    border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border);
   }
   .cookie-accept { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .cookie-accept:hover { background: var(--accent2); }
+  .cookie-accept:hover { background: var(--accent-h); }
   .cookie-reject { background: transparent; color: var(--muted); }
   .cookie-reject:hover { border-color: var(--muted); color: var(--text); }
 
   /* ── Privacy modal ── */
   .privacy-overlay {
     display: none; position: fixed; inset: 0; z-index: 400;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    background: rgba(0,0,0,0.72);
     justify-content: center; align-items: flex-start; padding: 40px 20px; overflow-y: auto;
   }
   .privacy-overlay.open { display: flex; }
   .privacy-modal {
-    background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
     max-width: 700px; width: 100%; max-height: calc(100vh - 80px); overflow-y: auto; padding: 28px;
   }
-  .privacy-modal h2 { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 16px; }
-  .privacy-modal h3 { font-size: 13px; font-weight: 700; color: var(--accent); margin: 20px 0 8px; }
-  .privacy-modal p, .privacy-modal li { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.8; }
+  .privacy-modal h2 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 16px; }
+  .privacy-modal h3 { font-size: 13px; font-weight: 700; color: var(--text); margin: 20px 0 8px; }
+  .privacy-modal p, .privacy-modal li { font-size: 13px; color: var(--muted); line-height: 1.7; }
   .privacy-modal ul { padding-left: 20px; margin: 8px 0; }
   .privacy-modal .close-priv {
     float: right; background: transparent; border: 1px solid var(--border); color: var(--muted);
-    width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-size: 16px;
+    width: 28px; height: 28px; border-radius: var(--radius); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
   }
-  .privacy-modal .close-priv:hover { border-color: var(--danger, #ff5555); color: var(--danger, #ff5555); }
+  .privacy-modal .close-priv:hover { border-color: var(--tick-border); color: var(--text); }
   /* ── Tab bar ─────────────────────────────────────────────── */
   .tabs {
     display: flex;
@@ -856,320 +824,285 @@
   }
   .tab {
     font-family: var(--sans);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
+    font-size: 13px;
+    font-weight: 600;
     color: var(--muted);
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 7px;
+    border-radius: var(--radius);
     padding: 7px 14px;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: color 0.15s, background 0.15s;
   }
   .tab:hover { color: var(--text); }
   .tab.active {
-    color: #fff;
-    background: var(--surface2);
-    border-color: var(--border);
+    color: var(--text);
+    background: var(--accent-tint);
+    border-color: var(--accent);
   }
   main.view-hidden { display: none; }
 
   /* ── Screenshot generator ────────────────────────────────── */
-  /* Wide workspace on the left, a fixed settings sidebar on the right. */
-  #viewShots { grid-template-columns: minmax(0, 1fr) 320px; }
+  /* Wide list on the left, a fixed settings column on the right. */
+  #viewShots { grid-template-columns: minmax(0, 1fr) 300px; }
 
   .shots-work { gap: 12px; }
   .work-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .work-title { display: flex; align-items: center; gap: 8px; }
+  .work-title { display: flex; align-items: baseline; gap: 8px; }
   .work-title .block-title { margin-bottom: 0; }
-  .shot-count {
-    font-family: var(--mono);
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 1px 8px;
-    min-width: 24px;
-    text-align: center;
-  }
+  .shot-count { font-size: 13px; color: var(--muted); }
   .shots-work:not(.has-shots) .work-head .log-btn { visibility: hidden; }
 
-  /* Drop area: fills the workspace while empty, a slim strip once loaded. */
+  /* Drop area: fills the space while empty, a slim strip once loaded. */
   #shotDrop {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
     gap: 12px;
-    border: 1.5px dashed var(--border);
-    border-radius: 12px;
-    background: var(--surface);
+    border: 1px dashed var(--tick-border);
+    border-radius: var(--radius);
     padding: 10px 14px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: border-color 0.15s, background 0.15s;
   }
-  #shotDrop:hover, #shotDrop.drag-over {
-    border-color: var(--accent);
-    background: rgba(255,107,43,0.04);
-  }
-  .drop-icon {
-    flex: 0 0 auto;
-    width: 34px; height: 34px;
-    border-radius: 9px;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(255,107,43,0.12);
-    color: var(--accent);
-  }
-  .drop-title { font-size: 13px; font-weight: 700; color: var(--text); }
-  .drop-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+  #shotDrop:hover, #shotDrop.drag-over { border-color: var(--accent2); background: var(--accent-tint); }
+  .drop-icon { flex: 0 0 auto; display: flex; color: var(--accent2); }
+  .drop-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .drop-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .shots-work:not(.has-shots) #shotDrop {
     flex: 1 1 auto;
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    gap: 14px;
+    gap: 12px;
     padding: 40px 24px;
   }
-  .shots-work:not(.has-shots) .drop-icon { width: 56px; height: 56px; border-radius: 14px; }
-  .shots-work:not(.has-shots) .drop-icon svg { width: 26px; height: 26px; }
+  .shots-work:not(.has-shots) .drop-icon svg { width: 32px; height: 32px; }
   .shots-work:not(.has-shots) .drop-title { font-size: 16px; }
-  .shots-work:not(.has-shots) .drop-sub { font-size: 11px; margin-top: 6px; }
+  .shots-work:not(.has-shots) .drop-sub { font-size: 13px; margin-top: 4px; }
 
-  /* One card per screenshot: the original next to how it will come out. */
-  .shot-gallery {
+  /* The loaded screenshots, one row each, split by hairlines. */
+  .shot-list {
     flex: 1 1 0;
     min-height: 0;
     overflow-y: auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    border-top: 1px solid var(--border);
+  }
+  .shots-work:not(.has-shots) .shot-list { display: none; }
+  .shot-row {
+    display: flex;
+    align-items: center;
     gap: 12px;
-    align-content: start;
-    padding-right: 4px;
+    padding: 10px 4px 10px 0;
+    border-bottom: 1px solid var(--border);
   }
-  .shots-work:not(.has-shots) .shot-gallery { display: none; }
-  .shot-card {
-    min-width: 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px 12px 12px;
-  }
-  .shot-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-  .shot-idx {
+  .shot-thumb {
     flex: 0 0 auto;
-    width: 20px; height: 20px;
-    border-radius: 6px;
+    width: 48px; height: 48px;
+    object-fit: contain;
     background: var(--surface2);
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--mono);
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--muted);
+    border-radius: var(--radius);
   }
+  .shot-meta { flex: 1 1 auto; min-width: 0; }
   .shot-name {
-    flex: 1 1 auto;
-    min-width: 0;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .shot-chip {
+  .shot-dims { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .shot-warn { color: var(--accent2); }
+  .row-btn {
     flex: 0 0 auto;
-    font-family: var(--mono);
-    font-size: 9px;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-    color: var(--muted);
+    width: 76px; height: 30px;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 2px 6px;
-    white-space: nowrap;
-  }
-  .shot-chip.ok { color: var(--success); background: rgba(61,230,142,0.10); border-color: rgba(61,230,142,0.25); }
-  .shot-chip.warn { color: var(--accent2); background: rgba(255,154,92,0.10); border-color: rgba(255,154,92,0.30); }
-  .shot-x {
-    flex-shrink: 0;
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 6px;
-    width: 24px; height: 24px;
+    border-radius: var(--radius);
     cursor: pointer;
-    font-size: 12px;
-    line-height: 1;
+    transition: border-color 0.15s, color 0.15s;
   }
-  .shot-x:hover { color: #fff; border-color: var(--accent); }
+  .row-btn:hover { border-color: var(--tick-border); }
+  .row-btn.danger:hover { color: var(--danger); border-color: var(--danger); }
 
-  .shot-compare {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr);
-    align-items: center;
-    gap: 8px;
-  }
-  .shot-frame { margin: 0; min-width: 0; }
-  .shot-stage {
-    height: 230px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg);
-    padding: 12px;
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
-  }
-  .shot-stage img, .shot-stage canvas {
-    display: block;
-    width: auto; height: auto;
-    max-width: 100%; max-height: 100%;
-    border-radius: 3px;
-    outline: 1px solid rgba(255,255,255,0.08);
-    box-shadow: 0 8px 22px rgba(0,0,0,0.5);
-  }
-  .shot-frame figcaption {
-    display: flex;
-    justify-content: space-between;
-    gap: 6px;
-    margin-top: 6px;
-    font-size: 10px;
-    color: var(--muted);
-  }
-  .shot-px { font-family: var(--mono); color: var(--text); }
-  .shot-arrow { color: var(--muted); font-size: 14px; text-align: center; margin-bottom: 22px; }
-
-  /* Settings sidebar: the sections scroll together, the button stays put. */
-  .shots-side {
-    gap: 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-  }
-  .side-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0 16px; }
+  /* Settings column: a hairline on its left, sections split by hairlines,
+     the action pinned at the bottom. */
+  .shots-side { gap: 0; border-left: 1px solid var(--border); padding-left: 18px; }
+  .side-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 4px; }
   .side-sec { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .side-sec:first-child { padding-top: 0; }
   .side-sec:last-child { border-bottom: none; }
   .side-sec .block-title { margin-bottom: 8px; }
-  .side-foot {
-    flex: 0 0 auto;
-    padding: 14px 16px 16px;
-    border-top: 1px solid var(--border);
-    background: var(--surface2);
-    border-radius: 0 0 12px 12px;
-  }
+  .side-foot { flex: 0 0 auto; padding-top: 12px; border-top: 1px solid var(--border); }
   .side-foot-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
   .side-foot-row .log-btn { flex: 0 0 auto; white-space: nowrap; }
-  .shot-summary {
-    min-width: 0;
-    min-height: 32px;
-    font-family: var(--mono);
-    font-size: 11px;
-    line-height: 1.5;
-    color: var(--muted);
-  }
+  .shot-summary { min-width: 0; min-height: 36px; font-size: 12px; line-height: 1.5; color: var(--muted); }
+  .side-foot .toggle-option { margin-top: 10px; }
 
-  .side-foot .toggle-option { margin-top: 10px; font-size: 12px; color: var(--text); }
+  /* Choices side by side at equal widths; the chosen one is filled. */
+  .seg { display: flex; gap: 6px; }
+  .seg button {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 32px;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .seg button:hover { border-color: var(--tick-border); }
+  .seg button.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+  .seg button.active:hover { background: var(--accent-h); }
 
   .size-select {
     width: 100%;
+    height: 32px;
     margin-top: 8px;
-    font-family: var(--mono);
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text);
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 9px;
-    cursor: pointer;
-  }
-  .size-select:hover { border-color: var(--muted); }
-  .size-select:focus { outline: none; border-color: var(--accent); }
-
-  /* Side-by-side choices: the store, and the scaling mode. */
-  .seg {
-    display: flex;
-    gap: 3px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 3px;
-  }
-  .seg button {
-    flex: 1 1 0;
     font-family: var(--sans);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.2px;
-    color: var(--muted);
-    background: transparent;
-    border: none;
-    border-radius: 6px;
-    padding: 7px 8px;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .seg button:hover { color: var(--text); }
-  .seg button.active {
-    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
     background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0 8px;
+    cursor: pointer;
   }
-  .size-note {
-    font-family: var(--mono);
-    font-size: 9px;
-    color: var(--muted);
-    line-height: 1.5;
-    margin-top: 8px;
-  }
+  .size-select:hover { border-color: var(--tick-border); }
+  .size-select:focus { outline: none; border-color: var(--accent2); }
+  .size-note { font-size: 11px; color: var(--muted); line-height: 1.45; margin-top: 8px; }
 
-  .swatches { display: flex; align-items: center; gap: 6px; }
+  .swatches { display: flex; align-items: center; gap: 5px; }
   .swatch, .color-input {
     flex: 0 0 auto;
     width: 28px; height: 28px;
-    border-radius: 8px;
+    border-radius: var(--radius);
     border: 1px solid var(--border);
     cursor: pointer;
-    transition: all 0.15s;
   }
-  .swatch.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(255,107,43,0.25); }
+  .swatch.active { border-color: var(--accent2); box-shadow: 0 0 0 1px var(--accent2); }
   .color-input { padding: 0; background: transparent; overflow: hidden; }
   .color-input::-webkit-color-swatch-wrapper { padding: 0; }
-  .color-input::-webkit-color-swatch { border: none; border-radius: 7px; }
+  .color-input::-webkit-color-swatch { border: none; border-radius: calc(var(--radius) - 1px); }
   .color-hex {
     flex: 1 1 auto;
-    min-width: 0;
+    min-width: 70px;
     height: 28px;
-    font-family: var(--mono);
-    font-size: 11px;
+    font-family: var(--sans);
+    font-size: 12px;
     color: var(--text);
-    background: var(--bg);
+    background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0 8px;
-    text-transform: uppercase;
+    border-radius: var(--radius);
+    padding: 0 6px;
   }
-  .color-hex:focus { outline: none; border-color: var(--accent); }
+  .color-hex:focus { outline: none; border-color: var(--accent2); }
 
   #shotGenerateBtn {
     width: 100%;
-    padding: 13px;
+    height: 42px;
+    margin-top: 12px;
     background: var(--accent);
     color: #fff;
     font-family: var(--sans);
-    font-weight: 800;
-    font-size: 13px;
-    letter-spacing: 0.3px;
+    font-weight: 700;
+    font-size: 14px;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius);
     cursor: pointer;
-    margin-top: 12px;
-    transition: all 0.15s;
+    transition: background 0.15s;
   }
   #shotGenerateBtn:disabled { opacity: 0.4; cursor: not-allowed; }
-  #shotGenerateBtn:not(:disabled):hover { background: var(--accent2); }
+  #shotGenerateBtn:not(:disabled):hover { background: var(--accent-h); }
+
+  /* Preview popup: one screenshot as it will come out, with its scaling. */
+  .pv-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: rgba(0,0,0,0.72);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .pv-overlay.open { display: flex; }
+  .pv-dialog {
+    width: min(920px, 100%);
+    height: min(820px, 100%);
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .pv-head { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .pv-head-text { flex: 1 1 auto; min-width: 0; }
+  .pv-title { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pv-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .pv-close {
+    flex: 0 0 auto;
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+  .pv-close:hover { color: var(--text); border-color: var(--tick-border); }
+  .pv-stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    background: var(--bg);
+  }
+  .pv-stage canvas {
+    display: block;
+    width: auto; height: auto;
+    max-width: 100%; max-height: 100%;
+    outline: 1px solid var(--border);
+  }
+  .pv-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding: 12px 16px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .pv-opt {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    text-align: left;
+    padding: 10px 12px;
+    font-family: var(--sans);
+    color: var(--text);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .pv-opt:hover { border-color: var(--tick-border); }
+  .pv-opt-title { font-size: 13px; font-weight: 700; }
+  .pv-opt-desc { font-size: 12px; line-height: 1.4; color: var(--muted); }
+  .pv-opt.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+  .pv-opt.active .pv-opt-desc { color: #fff; }
 </style>
 </head>
 <body>
@@ -1194,9 +1127,9 @@
   <section class="pane pane-left">
 
     <div class="block">
-      <div class="block-title">Source Image</div>
+      <div class="block-title">Source image</div>
       <div id="dropzone">
-        <span class="dropzone-icon">🖼️</span>
+        <span class="dropzone-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg></span>
         <p class="dropzone-text">
           <span>Drag &amp; drop an image, or <strong onclick="document.getElementById('fileInput').click()">browse</strong></span>
           <span class="dz-hint">PNG / JPG · 1024×1024+ recommended</span>
@@ -1228,7 +1161,7 @@
     <div class="block options-block">
       <div class="block-title block-title-row">
         <span>Options</span>
-        <button class="log-btn" onclick="openLog()">Output Log</button>
+        <button class="log-btn" onclick="openLog()">Output log</button>
       </div>
 
       <div class="options-body">
@@ -1383,7 +1316,7 @@
       </div>
 
       <button id="generateBtn" onclick="generate()" disabled>
-        Generate &amp; Save
+        Generate &amp; save
         <div class="btn-spinner"></div>
       </button>
     </div>
@@ -1395,7 +1328,7 @@
 <!-- ══ SCREENSHOT GENERATOR ═════════════════════════════════ -->
 <main id="viewShots" class="view-hidden">
 
-  <!-- LEFT: the screenshots, each next to how it will come out -->
+  <!-- LEFT: the screenshots to process -->
   <section class="pane shots-work" id="shotsWork">
 
     <div class="work-head">
@@ -1408,16 +1341,16 @@
 
     <div id="shotDrop">
       <div class="drop-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg>
       </div>
       <div class="drop-copy">
         <div class="drop-title">Drop screenshots here</div>
-        <div class="drop-sub">or click to choose · PNG or JPEG · add as many as you like</div>
+        <div class="drop-sub">or click to choose. PNG or JPEG, as many as you like.</div>
       </div>
       <input type="file" id="shotInput" accept=".png,.jpg,.jpeg" multiple />
     </div>
 
-    <div class="shot-gallery" id="shotList"></div>
+    <div class="shot-list" id="shotList"></div>
 
   </section>
 
@@ -1427,7 +1360,7 @@
     <div class="side-scroll">
 
       <div class="side-sec">
-        <div class="block-title">Canvas Size</div>
+        <div class="block-title">Canvas size</div>
         <div class="seg" id="storeSeg">
           <button id="storeApple" onclick="setShotStore('apple')">Apple App Store</button>
           <button id="storeMicrosoft" onclick="setShotStore('microsoft')">Microsoft Store</button>
@@ -1459,6 +1392,7 @@
           <button id="toggleShotCrop" onclick="setShotFit('crop')">Crop</button>
         </div>
         <div class="size-note" id="shotFitHint">Never enlarge, just pad (keeps the picture sharp)</div>
+        <div class="size-note">Sets every screenshot. Use Preview to change one on its own.</div>
       </div>
 
     </div>
@@ -1466,18 +1400,48 @@
     <div class="side-foot">
       <div class="side-foot-row">
         <div class="shot-summary" id="shotSummary">No screenshots loaded.</div>
-        <button class="log-btn" onclick="openLog()">Output Log</button>
+        <button class="log-btn" onclick="openLog()">Output log</button>
       </div>
       <div class="toggle-option on" id="toggleShotZip" onclick="toggleShotZip()">
         <div class="toggle-box">✓</div>
-        <span>Save as one ZIP file</span>
+        <div class="toggle-label">Save as one ZIP file</div>
       </div>
-      <button id="shotGenerateBtn" onclick="generateShots()" disabled>Resize Screenshots</button>
+      <button id="shotGenerateBtn" onclick="generateShots()" disabled>Resize screenshots</button>
     </div>
 
   </section>
 
 </main>
+
+<!-- Screenshot preview popup -->
+<div class="pv-overlay" id="pvOverlay" onclick="if(event.target===this)closeShotPreview()">
+  <div class="pv-dialog" role="dialog" aria-modal="true" aria-labelledby="pvTitle">
+    <div class="pv-head">
+      <div class="pv-head-text">
+        <div class="pv-title" id="pvTitle"></div>
+        <div class="pv-meta" id="pvMeta"></div>
+      </div>
+      <button class="pv-close" onclick="closeShotPreview()" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="pv-stage" id="pvStage"></div>
+    <div class="pv-options">
+      <button class="pv-opt" id="pvOptPad" onclick="setPreviewFit('pad')">
+        <span class="pv-opt-title">Pad</span>
+        <span class="pv-opt-desc">Never enlarge, just pad. Keeps the picture sharp.</span>
+      </button>
+      <button class="pv-opt" id="pvOptFit" onclick="setPreviewFit('fit')">
+        <span class="pv-opt-title">Scale up</span>
+        <span class="pv-opt-desc">Scale up to fill the canvas.</span>
+      </button>
+      <button class="pv-opt" id="pvOptCrop" onclick="setPreviewFit('crop')">
+        <span class="pv-opt-title">Crop</span>
+        <span class="pv-opt-desc">Crop to fill the canvas. Trims the edges, no colour bands.</span>
+      </button>
+    </div>
+  </div>
+</div>
 
 <footer class="app-footer">
   <span>Made by <a href="#" onclick="openExternal(event,'https://eeriegoesd.com')" style="color:var(--accent);text-decoration:none;font-weight:700;">EERIE</a></span>
@@ -1888,7 +1852,6 @@ function buildPlatformCards() {
     card.id = 'card-' + p.id;
     card.innerHTML = `
       <div class="platform-header">
-        <span class="platform-icon">${p.icon}</span>
         <span class="platform-name">${p.name}</span>
         <div class="platform-check"></div>
       </div>
@@ -1955,7 +1918,7 @@ function rebuildAssetPanel() {
   const header = document.createElement('div');
   header.className = 'asset-panel-header';
   header.innerHTML = `
-    <div class="asset-panel-title">📋 <span>Select assets to generate</span></div>
+    <div class="asset-panel-title"><span>Select assets to generate</span></div>
     <div class="asset-panel-actions">
       <button class="btn-sm" onclick="selectAll()">All</button>
       <button class="btn-sm" onclick="selectNone()">None</button>
@@ -1970,7 +1933,7 @@ function rebuildAssetPanel() {
 
       const stitle = document.createElement('div');
       stitle.className = 'asset-section-title';
-      stitle.textContent = `${p.icon} ${p.name} — ${sec.title}`;
+      stitle.textContent = `${p.name} · ${sec.title}`;
       section.appendChild(stitle);
 
       const list = document.createElement('div');
@@ -2696,7 +2659,7 @@ function updateSummary() {
 
   const parts = Object.entries(perPlatform).map(([pid, n]) => {
     const p = PLATFORMS.find(x => x.id === pid);
-    return `${p.icon} ${n} ${p.name}`;
+    return `${n} ${p.name}`;
   });
 
   const extras = [];
@@ -3608,8 +3571,10 @@ const SHOT_FIT_HINTS = {
   crop: 'Crop to fill the canvas (trims the edges, no colour bands)'
 };
 
+// The sidebar switch sets every screenshot; Preview changes one on its own.
 function setShotFit(mode) {
   shotFit = mode;
+  shots.forEach(s => { s.fit = mode; });
   document.getElementById('toggleShotPad').classList.toggle('active', mode === 'pad');
   document.getElementById('toggleShotFit').classList.toggle('active', mode === 'fit');
   document.getElementById('toggleShotCrop').classList.toggle('active', mode === 'crop');
@@ -3631,7 +3596,7 @@ function addShotFiles(files) {
     reader.onload = e => {
       const img = new Image();
       img.onload = () => {
-        shots.push({ img, name: file.name, width: img.width, height: img.height });
+        shots.push({ img, name: file.name, width: img.width, height: img.height, fit: shotFit });
         if (--pending === 0) { renderShotList(); }
         else renderShotList();
       };
@@ -3653,50 +3618,41 @@ function clearShots() {
   renderShotList();
 }
 
-// What happens to one screenshot on the chosen canvas, shown on its card.
+// What happens to one screenshot on the chosen canvas, shown on its row.
 function shotStatus(s) {
-  if (s.width === shotSize.w && s.height === shotSize.h) return { text: 'Exact size', cls: 'ok' };
-  if (shotFit === 'crop') return { text: 'Cropped to fill', cls: '' };
-  if (shotFit === 'fit') return { text: 'Scaled to fill', cls: '' };
-  if (s.width > shotSize.w || s.height > shotSize.h) return { text: 'Shrunk to fit', cls: 'warn' };
-  return { text: 'Padded', cls: '' };
+  const fit = s.fit || shotFit;
+  if (s.width === shotSize.w && s.height === shotSize.h) return { text: 'Exact size', warn: false };
+  if (fit === 'crop') return { text: 'Cropped to fill', warn: false };
+  if (fit === 'fit') return { text: 'Scaled to fill', warn: false };
+  if (s.width > shotSize.w || s.height > shotSize.h) return { text: 'Shrunk to fit', warn: true };
+  return { text: 'Padded', warn: false };
 }
 
-// One card per screenshot: the original next to what it will come out as.
+// One row per screenshot, with its Preview and Remove buttons.
 function renderShotList() {
   const list = document.getElementById('shotList');
   list.innerHTML = '';
   shots.forEach((s, i) => {
     const st = shotStatus(s);
-    const card = document.createElement('div');
-    card.className = 'shot-card';
-    card.innerHTML =
-      '<div class="shot-card-head">' +
-        '<span class="shot-idx">' + (i + 1) + '</span>' +
+    const row = document.createElement('div');
+    row.className = 'shot-row';
+    row.innerHTML =
+      '<img class="shot-thumb" alt="" />' +
+      '<div class="shot-meta">' +
         '<div class="shot-name"></div>' +
-        '<span class="shot-chip' + (st.cls ? ' ' + st.cls : '') + '">' + st.text + '</span>' +
-        '<button class="shot-x" title="Remove">✕</button>' +
+        '<div class="shot-dims">' + s.width + ' × ' + s.height + ' · ' +
+          '<span' + (st.warn ? ' class="shot-warn"' : '') + '>' + st.text + '</span></div>' +
       '</div>' +
-      '<div class="shot-compare">' +
-        '<figure class="shot-frame">' +
-          '<div class="shot-stage shot-orig"></div>' +
-          '<figcaption><span>Original</span><span class="shot-px">' + s.width + ' × ' + s.height + '</span></figcaption>' +
-        '</figure>' +
-        '<div class="shot-arrow" aria-hidden="true">→</div>' +
-        '<figure class="shot-frame">' +
-          '<div class="shot-stage shot-out"></div>' +
-          '<figcaption><span>Output</span><span class="shot-px">' + shotSize.w + ' × ' + shotSize.h + '</span></figcaption>' +
-        '</figure>' +
-      '</div>';
-    const name = card.querySelector('.shot-name');
+      '<button class="row-btn">Preview</button>' +
+      '<button class="row-btn danger">Remove</button>';
+    row.querySelector('.shot-thumb').src = s.img.src;
+    const name = row.querySelector('.shot-name');
     name.textContent = s.name;
     name.title = s.name;
-    const img = document.createElement('img');
-    img.src = s.img.src;
-    img.alt = '';
-    card.querySelector('.shot-orig').appendChild(img);
-    card.querySelector('.shot-x').onclick = () => removeShot(i);
-    list.appendChild(card);
+    const btns = row.querySelectorAll('.row-btn');
+    btns[0].onclick = () => openShotPreview(i);
+    btns[1].onclick = () => removeShot(i);
+    list.appendChild(row);
   });
   document.getElementById('shotsWork').classList.toggle('has-shots', shots.length > 0);
   document.getElementById('shotCount').textContent = shots.length;
@@ -3712,18 +3668,20 @@ function updateShotSummary() {
     bar.textContent = 'No screenshots loaded.';
     return;
   }
-  const shrunk = shotFit === 'pad' ? shots.filter(s => s.width > shotSize.w || s.height > shotSize.h).length : 0;
+  const shrunk = shots.filter(s => (s.fit || shotFit) === 'pad' && (s.width > shotSize.w || s.height > shotSize.h)).length;
   bar.innerHTML =
-    '<strong style="color:var(--text)">' + shots.length + '</strong> screenshot' +
-    (shots.length === 1 ? '' : 's') + ' → ' + shotSize.w + ' × ' + shotSize.h +
+    '<span style="color:var(--text)">' + shots.length + ' screenshot' +
+    (shots.length === 1 ? '' : 's') + ' → ' + shotSize.w + ' × ' + shotSize.h + '</span>' +
     '<br>Background ' + shotColor +
     (shrunk > 0 ? '<br><span style="color:var(--accent2)">' + shrunk + ' larger than the canvas, so shrunk to fit.</span>' : '');
 }
 
-// Paints one screenshot centred on the chosen canvas. k shrinks the whole
-// result for the on-screen preview without changing where anything lands.
+// Paints one screenshot centred on the chosen canvas, using that
+// screenshot's own scaling. k shrinks the whole result for the on-screen
+// preview without changing where anything lands.
 function renderShotCanvas(shot, k = 1) {
   const W = shotSize.w, H = shotSize.h;
+  const fit = shot.fit || shotFit;
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.round(W * k));
   canvas.height = Math.max(1, Math.round(H * k));
@@ -3735,12 +3693,12 @@ function renderShotCanvas(shot, k = 1) {
   // Crop mode scales until BOTH sides are covered and lets the canvas trim
   // what spills over, so a picture of another shape (a 3:2 image on a 16:9
   // canvas) fills it with no bands of background colour down the sides.
-  const ratio = shotFit === 'crop'
+  const ratio = fit === 'crop'
     ? Math.max(W / shot.width, H / shot.height)
     : Math.min(W / shot.width, H / shot.height);
   // Padding mode never enlarges: a window shot blown up goes soft, and the
   // whole point of padding is to keep it pixel for pixel.
-  const scale = (shotFit === 'pad' ? Math.min(1, ratio) : ratio) * k;
+  const scale = (fit === 'pad' ? Math.min(1, ratio) : ratio) * k;
   const w = Math.max(1, Math.round(shot.width * scale));
   const h = Math.max(1, Math.round(shot.height * scale));
 
@@ -3750,14 +3708,44 @@ function renderShotCanvas(shot, k = 1) {
   return canvas;
 }
 
-// Redraws the output side of every card, e.g. after a colour change.
+// ── Preview popup ──
+let previewIndex = -1;   // the screenshot the popup shows, -1 when closed
+
+function openShotPreview(i) {
+  previewIndex = i;
+  document.getElementById('pvOverlay').classList.add('open');
+  renderShotPreview();
+}
+
+function closeShotPreview() {
+  previewIndex = -1;
+  document.getElementById('pvOverlay').classList.remove('open');
+  document.getElementById('pvStage').innerHTML = '';
+}
+
+// Sets the scaling for the screenshot in the popup only.
+function setPreviewFit(mode) {
+  const s = shots[previewIndex];
+  if (!s) return;
+  s.fit = mode;
+  renderShotList();
+}
+
+// Redraws the popup, if it is open, after anything that changes the output.
 function renderShotPreview() {
-  const k = Math.min(1, 560 / Math.max(shotSize.w, shotSize.h));
-  document.querySelectorAll('#shotList .shot-out').forEach((stage, i) => {
-    if (!shots[i]) return;
-    stage.innerHTML = '';
-    stage.appendChild(renderShotCanvas(shots[i], k));
-  });
+  if (previewIndex === -1) return;
+  const s = shots[previewIndex];
+  if (!s) { closeShotPreview(); return; }
+  const fit = s.fit || shotFit;
+  document.getElementById('pvTitle').textContent = s.name;
+  document.getElementById('pvMeta').textContent =
+    s.width + ' × ' + s.height + '  →  ' + shotSize.w + ' × ' + shotSize.h + '  ·  ' + shotStatus(s).text;
+  document.getElementById('pvOptPad').classList.toggle('active', fit === 'pad');
+  document.getElementById('pvOptFit').classList.toggle('active', fit === 'fit');
+  document.getElementById('pvOptCrop').classList.toggle('active', fit === 'crop');
+  const stage = document.getElementById('pvStage');
+  stage.innerHTML = '';
+  stage.appendChild(renderShotCanvas(s, Math.min(1, 1600 / Math.max(shotSize.w, shotSize.h))));
 }
 
 function shotOutputName(shot, index) {
@@ -3850,6 +3838,9 @@ function initShots() {
     addShotFiles(e.target.files);
     e.target.value = '';
   });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && previewIndex !== -1) closeShotPreview();
+  });
 
   renderShotList();
 }
@@ -3941,7 +3932,7 @@ try {
 <!-- Privacy / Cookie modal -->
 <div class="privacy-overlay" id="privacyOverlay" onclick="if(event.target===this)closePrivacy()">
   <div class="privacy-modal" id="privacyModal">
-    <button class="close-priv" onclick="closePrivacy()" aria-label="Close">&times;</button>
+    <button class="close-priv" onclick="closePrivacy()" aria-label="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <h2></h2>
     <div class="priv-body"></div>
   </div>
@@ -3950,7 +3941,7 @@ try {
 <!-- FAQ modal -->
 <div class="privacy-overlay" id="faqOverlay" onclick="if(event.target===this)closeFaq()">
   <div class="privacy-modal">
-    <button class="close-priv" onclick="closeFaq()" aria-label="Close">&times;</button>
+    <button class="close-priv" onclick="closeFaq()" aria-label="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <h2>Frequently Asked Questions</h2>
     <h3>What platforms are supported?</h3>
     <p>Microsoft Store (WACK-compliant), Windows desktop .ico, macOS, Android (Play Store), iOS (App Store), Chrome Extension, Favicon, Social/OG images, and Flatpak. Each platform includes all required icon sizes and store graphics.</p>
@@ -3972,8 +3963,8 @@ try {
 <!-- Output Log popup -->
 <div class="privacy-overlay" id="logOverlay" onclick="if(event.target===this)closeLog()">
   <div class="privacy-modal">
-    <button class="close-priv" onclick="closeLog()" aria-label="Close">&times;</button>
-    <h2>Output Log</h2>
+    <button class="close-priv" onclick="closeLog()" aria-label="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <h2>Output log</h2>
     <div id="logOutput"></div>
   </div>
 </div>
