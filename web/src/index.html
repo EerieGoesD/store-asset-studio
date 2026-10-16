@@ -3810,8 +3810,15 @@ async function generateShots() {
       }
       log('Saved ' + saved + ' files to the chosen folder.', 'ok');
     } else {
-      log('This browser cannot save a folder; downloading a ZIP instead.', 'skip');
-      await downloadShotZip();
+      // No folder picker (Safari, Firefox): download each PNG on its own.
+      for (const o of outputs) {
+        const url = URL.createObjectURL(new Blob([o.data], { type: 'image/png' }));
+        const a = document.createElement('a');
+        a.href = url; a.download = o.path; a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        await new Promise(r => setTimeout(r, 300));
+      }
+      log('Downloaded ' + outputs.length + ' PNG file' + (outputs.length === 1 ? '' : 's') + '.', 'ok');
     }
   } catch (err) {
     if (err && err.name === 'AbortError') log('Save cancelled.', 'skip');
